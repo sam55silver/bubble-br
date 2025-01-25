@@ -1,17 +1,13 @@
 import { io } from "socket.io-client";
 
 export class WebRTCClient {
-  constructor(app, characterManager, playerTexture) {
+  constructor(characterManager) {
     this.socket = io("http://localhost:3000");
     this.peerConnections = new Map(); // Store RTCPeerConnection for each peer
     this.dataChannels = new Map(); // Store data channels for each peer
     this.roomId = null;
 
     this.characterManager = characterManager;
-    this.playerTexture = playerTexture;
-
-    console.log("start", this.characterManager);
-    this.app = app;
 
     this.configuration = {
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
@@ -189,11 +185,7 @@ export class WebRTCClient {
 
           // Create character if it doesn't exist
           if (!this.characterManager.characters.get(userId)) {
-            const character = this.characterManager.createCharacter(
-              userId,
-              this.playerTexture,
-            );
-            this.app.stage.addChild(character);
+            this.characterManager.createCharacter(userId);
           }
 
           // Update position

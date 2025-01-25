@@ -12,21 +12,14 @@ import { CharacterManager } from "./room";
   // Append the application canvas to the document body
   document.getElementById("pixi-container").appendChild(app.canvas);
 
-  const characterManager = new CharacterManager();
+  const playerTexture = await Assets.load("/assets/bunny.png");
 
-  // Load the bunny texture
-  const texture = await Assets.load("/assets/bunny.png");
+  const characterManager = new CharacterManager(app, playerTexture);
 
-  const client = new WebRTCClient(app, characterManager, texture);
+  const client = new WebRTCClient(characterManager);
   client.joinRoom(1);
 
-  const char = characterManager.createCharacter(
-    client.socket.id,
-    texture,
-    true,
-  );
-
-  app.stage.addChild(char);
+  characterManager.createCharacter(client.socket.id, true);
 
   // Listen for animate update
   app.ticker.add((time) => {

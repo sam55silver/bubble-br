@@ -1,21 +1,23 @@
 import { Character } from "./character";
 
 export class CharacterManager {
-  constructor() {
+  constructor(app, playerTexture) {
+    this.app = app;
+    this.playerTexture = playerTexture;
     this.characters = new Map(); // Map of all characters (key: playerId, value: Character instance)
     this.localPlayerId = null; // ID of the local player
   }
 
   // Create a new character
-  createCharacter(playerId, texture, isLocal = false) {
-    const character = new Character(texture);
+  createCharacter(playerId, isLocal = false) {
+    const character = new Character(this.playerTexture);
     this.characters.set(playerId, character);
 
     if (isLocal) {
       this.localPlayerId = playerId;
     }
 
-    return character;
+    this.app.stage.addChild(character);
   }
 
   // Remove a character
