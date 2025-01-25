@@ -1,5 +1,6 @@
 import { io, Socket } from "socket.io-client";
 import { CharacterManager } from "./players/manager.js";
+import { Direction, Position } from "./types.js";
 
 export const GameEvents = {
     PLAYER_INITIALIZED: "player_initialized",
@@ -7,7 +8,7 @@ export const GameEvents = {
     PLAYER_DISCONNECTED: "player_disconnected",
     EXISTING_PLAYERS: "existing_players",
     WORLD_STATE: "world_state",
-    PLAYER_MOVE: "player_move",
+    PLAYER_STATE: "player_state",
 };
 
 export class GameClient {
@@ -16,7 +17,9 @@ export class GameClient {
     private roomId: string | null;
 
     constructor(characterManager: CharacterManager) {
-        this.socket = io("http://localhost:3000");
+        const url = import.meta.env.PROD ? window.location.href : "http://localhost:5550";
+        console.log(url);
+        this.socket = io(url);
         this.characterManager = characterManager;
         this.roomId = null;
         this.setupSocketListeners();
@@ -48,7 +51,7 @@ export class GameClient {
         });
 
         this.socket.on(GameEvents.WORLD_STATE, (data: any) => {
-            this.characterManager.updateRemotePositions(data.state);
+            this.characterManager.updateRemoteStates(data.state);
         });
     }
 
@@ -65,15 +68,14 @@ export class GameClient {
     }
 
     public update(time: any): void {
-        const localPlayerPos: { x: number; y: number } | null = this.characterManager.update(time);
+        const localPlayer: { facing: Direction; position: Position } | null =
+            this.characterManager.update(time);
 
-        if (localPlayerPos == null) {
+        if (localPlayer == null) {
             return;
         }
 
-        this.sendGameData(GameEvents.PLAYER_MOVE, {
-            position: localPlayerPos,
-        });
+        this.sendGameData(GameEvents.PLAYER_STATE, localPlayer);
     }
 
     public disconnect(): void {
