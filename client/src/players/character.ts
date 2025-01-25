@@ -89,7 +89,7 @@ export class Character extends Container {
         if (this.isLocal) {
             this.updateLocal(time);
             this.updateRotation();
-            return { x: this.x, y: this.y };
+            return { position: { x: this.x, y: this.y }, facing: this.facing };
         } else {
             this.interpolate(Date.now());
             this.updateRotation();

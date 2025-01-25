@@ -49,32 +49,6 @@ export async function createScene(): Promise<[Application, Record<string, Textur
     //     bottom: map.y + (map.height * scale) / 2,
     // };
 
-    const crossBow = createSingleTile(
-        assets.crossBowRed,
-        map.x + 250, // Center of map
-        map.y + 250 + 60, // 60 pixels below center
-        1,
-        rotate90,
-    );
-    layers.characters.addChild(crossBow);
-
-    // const player = createSingleTile(
-    //     assets.player,
-    //     map.x + 250, // Center of map
-    //     map.y + 250, // Center of map
-    //     1,
-    // );
-    // layers.characters.addChild(player);
-
-    // const crossBowBolt = createSingleTile(
-    //     assets.crossBowBoltLight,
-    //     player.x,
-    //     player.y + 135, // Same Y as player
-    //     1,
-    //     rotate90
-    // );
-    // layers.characters.addChild(crossBowBolt);
-
     Object.values(layers).forEach((layer) => scene.addChild(layer));
     app.stage.addChild(scene);
 

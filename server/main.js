@@ -8,8 +8,8 @@ const MAP_SIZE = {
     height: 700,
 };
 
-const TICK_RATE = 60; // Number of ticks per second
-const TICK_INTERVAL = 1000 / TICK_RATE; // Milliseconds between ticks
+const TICK_RATE = 60;
+const TICK_INTERVAL = 1000 / TICK_RATE;
 
 const corsSettings = {
     cors: {
@@ -24,16 +24,15 @@ const GameEvents = {
     PLAYER_DISCONNECTED: "player_disconnected",
     EXISTING_PLAYERS: "existing_players",
     WORLD_STATE: "world_state",
-    PLAYER_MOVE: "player_move",
+    PLAYER_STATE: "player_state", // Changed from PLAYER_MOVE
 };
 
 const io = new Server(http, corsSettings);
 
-// Store active rooms and their participants with their positions
+// Map of rooms, where each room contains a Map of player states
+// rooms: Map<roomId, Map<playerId, playerState>>
 const rooms = new Map();
-const playerPositions = new Map();
 
-// Generate random position within map bounds
 function generateRandomPosition() {
     return {
         x: Math.floor(Math.random() * MAP_SIZE.width),
@@ -44,105 +43,92 @@ function generateRandomPosition() {
 io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
 
-    // Handle room joining
     socket.on(GameEvents.PLAYER_INITIALIZED, (roomId) => {
         console.log(`Socket ${socket.id} joining room ${roomId}`);
 
         // Create room if it doesn't exist
         if (!rooms.has(roomId)) {
-            rooms.set(roomId, new Set());
+            rooms.set(roomId, new Map());
         }
 
-        // Generate random position for new player
-        const initialPosition = generateRandomPosition();
-        playerPositions.set(socket.id, initialPosition);
+        const roomPlayers = rooms.get(roomId);
 
-        // Add user to room
-        rooms.get(roomId).add(socket.id);
+        // Create initial player state
+        const initialState = {
+            id: socket.id,
+            position: generateRandomPosition(),
+            facing: "south",
+            health: 100,
+        };
+
+        // Add player to room
+        roomPlayers.set(socket.id, initialState);
         socket.join(roomId);
 
-        // Notify other users in the room about new player with position
-        socket.to(roomId).emit(GameEvents.NEW_PLAYER, {
-            id: socket.id,
-            position: initialPosition,
-        });
+        // Notify other users in the room about new player
+        socket.to(roomId).emit(GameEvents.NEW_PLAYER, initialState);
 
-        // Send list of existing users with their positions to the new participant
-        const usersInRoom = Array.from(rooms.get(roomId))
-            .filter((id) => id !== socket.id)
-            .map((id) => ({
-                id,
-                position: playerPositions.get(id),
-            }));
+        // Send list of existing players to the new participant
+        const existingPlayers = Array.from(roomPlayers.entries())
+            .filter(([id]) => id !== socket.id)
+            .map(([_, state]) => state);
 
         socket.emit(GameEvents.PLAYER_INITIALIZED, {
-            id: socket.id,
-            position: initialPosition,
-            players: usersInRoom,
+            ...initialState,
+            players: existingPlayers,
         });
     });
 
-    // Handle game state updates
-    socket.on(GameEvents.PLAYER_MOVE, (data) => {
+    socket.on(GameEvents.PLAYER_STATE, (data) => {
         const { roomId, gameData } = data;
+        const roomPlayers = rooms.get(roomId);
 
-        // Update stored position
-        if (gameData.position) {
-            playerPositions.set(socket.id, {
-                x: gameData.position.x,
-                y: gameData.position.y,
-            });
+        if (roomPlayers && roomPlayers.has(socket.id)) {
+            // Update the entire player state
+            const updatedState = {
+                ...gameData,
+                id: socket.id, // Ensure the ID stays correct
+            };
+
+            // Update the player state in the room
+            roomPlayers.set(socket.id, updatedState);
         }
     });
 
-    // Handle disconnection
     socket.on("disconnect", () => {
         console.log("User disconnected:", socket.id);
 
-        // Remove user from all rooms
-        rooms.forEach((users, roomId) => {
-            if (users.has(socket.id)) {
-                users.delete(socket.id);
+        // Remove player from their room
+        rooms.forEach((players, roomId) => {
+            if (players.has(socket.id)) {
+                players.delete(socket.id);
                 io.to(roomId).emit(GameEvents.PLAYER_DISCONNECTED, { id: socket.id });
 
-                // Remove player position
-                playerPositions.delete(socket.id);
-
                 // Remove room if empty
-                if (users.size === 0) {
+                if (players.size === 0) {
                     rooms.delete(roomId);
                 }
             }
         });
     });
 
-    // Error handling
     socket.on("error", (error) => {
         console.error("Socket error:", error);
     });
 });
 
-// Server tick function
 function serverTick() {
-    // Process each room
-    rooms.forEach((users, roomId) => {
-        if (users.size > 0) {
-            // Gather all player positions for this room
-            const worldState = Array.from(users).map((playerId) => ({
-                id: playerId,
-                position: playerPositions.get(playerId),
-            }));
-
-            // Broadcast world state to all players in the room
+    rooms.forEach((players, roomId) => {
+        if (players.size > 0) {
+            // Convert players Map to array for world state
+            const worldState = Array.from(players.values());
             io.to(roomId).emit(GameEvents.WORLD_STATE, { state: worldState });
         }
     });
 }
 
-// Start the server tick
 const tickInterval = setInterval(serverTick, TICK_INTERVAL);
 
-// Error handling middleware
 app.use((err, req, res, next) => {
     console.error("Server error:", err);
     res.status(500).json({ error: "Internal Server Error" });
@@ -153,7 +139,6 @@ http.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);
 });
 
-// Graceful shutdown
 process.on("SIGTERM", () => {
     console.log("SIGTERM received. Shutting down gracefully...");
     clearInterval(tickInterval);

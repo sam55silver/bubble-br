@@ -8,7 +8,7 @@ export const GameEvents = {
     PLAYER_DISCONNECTED: "player_disconnected",
     EXISTING_PLAYERS: "existing_players",
     WORLD_STATE: "world_state",
-    PLAYER_MOVE: "player_move",
+    PLAYER_STATE: "player_state",
 };
 
 export class GameClient {
@@ -51,7 +51,7 @@ export class GameClient {
         });
 
         this.socket.on(GameEvents.WORLD_STATE, (data: any) => {
-            this.characterManager.updateRemotePositions(data.state);
+            this.characterManager.updateRemoteStates(data.state);
         });
     }
 
@@ -75,10 +75,7 @@ export class GameClient {
             return;
         }
 
-        this.sendGameData(GameEvents.PLAYER_MOVE, {
-            position: localPlayer.position,
-            facing: localPlayer.facing,
-        });
+        this.sendGameData(GameEvents.PLAYER_STATE, localPlayer);
     }
 
     public disconnect(): void {

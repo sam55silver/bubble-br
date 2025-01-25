@@ -33,24 +33,25 @@ export class CharacterManager {
     }
 
     // Update character position
-    updateRemotePositions(playerStates: PlayerState[]) {
+    updateRemoteStates(playerStates: PlayerState[]) {
         playerStates.forEach((playerState: PlayerState) => {
             const player: Character | null = this.players.get(playerState.id);
             if (!player || player.isLocal) {
                 return;
             }
             player.updatePosition(playerState.position);
+            player.facing = playerState.facing;
         });
     }
 
     update(time: any) {
-        let localPlayerPos = null;
+        let localPlayer = null;
         this.players.forEach((player: Character) => {
-            const pos = player.update(time);
-            if (pos != null) {
-                localPlayerPos = pos;
+            const state = player.update(time);
+            if (state != null) {
+                localPlayer = state;
             }
         });
-        return localPlayerPos;
+        return localPlayer;
     }
 }
