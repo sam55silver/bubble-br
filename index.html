@@ -9,6 +9,16 @@
     <title>PixiJS - Template</title>
 </head>
 
+
+<style>
+    .floater {
+    position: absolute;
+    top: 20px;    /* Adjust this value for distance from top */
+    left: 20px;   /* Adjust this value for distance from left */
+    z-index: 1000; /* Ensures button stays on top of other elements */
+    }
+</style>
+
 <body>
     <div id="connection-container">
         <div id="connection-panel">
@@ -31,6 +41,6 @@
             </div>
         </div>
     </div>
-    <script type="module" src="/src/main.ts"></script>
+    <script type="module" src="/src/main.js"></script>
 </body>
 </html>
