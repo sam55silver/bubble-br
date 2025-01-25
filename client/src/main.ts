@@ -1,7 +1,6 @@
 import { GameClient } from "./client";
 import { CharacterManager } from "./players/manager";
 import { createScene } from "./scene/scene";
-import { Assets } from "pixi.js";
 
 (async () => {
     const [app, assets] = await createScene();

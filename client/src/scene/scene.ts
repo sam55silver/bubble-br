@@ -10,10 +10,10 @@ export async function createScene(): Promise<[Application, Record<string, Textur
     });
 
     const rotate90 = Math.PI / 2;
-    const rotate45 = Math.PI / 4;
-    const rotateMinus90 = -Math.PI / 2;
-    const rotateMinus45 = -Math.PI / 4;
-
+    // const rotate45 = Math.PI / 4;
+    // const rotateMinus90 = -Math.PI / 2;
+    // const rotateMinus45 = -Math.PI / 4;
+    //
     // 2) load and retrieve needed assets
     const assets = await loadSceneAssets(manifest);
 
@@ -34,20 +34,20 @@ export async function createScene(): Promise<[Application, Record<string, Textur
 
     layers.background.addChild(map);
 
-    const windowBounds = {
-        left: 0,
-        right: window.innerWidth,
-        top: 0,
-        bottom: window.innerHeight,
-    };
+    // const windowBounds = {
+    //     left: 0,
+    //     right: window.innerWidth,
+    //     top: 0,
+    //     bottom: window.innerHeight,
+    // };
 
     // to disallow the player from moving outside the map
-    const mapBounds = {
-        left: map.x - (map.width * scale) / 2,
-        right: map.x + (map.width * scale) / 2,
-        top: map.y - (map.height * scale) / 2,
-        bottom: map.y + (map.height * scale) / 2,
-    };
+    // const mapBounds = {
+    //     left: map.x - (map.width * scale) / 2,
+    //     right: map.x + (map.width * scale) / 2,
+    //     top: map.y - (map.height * scale) / 2,
+    //     bottom: map.y + (map.height * scale) / 2,
+    // };
 
     const crossBow = createSingleTile(
         assets.crossBowRed,
