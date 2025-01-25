@@ -13,6 +13,9 @@ services:
       - "5551:80"
     depends_on:
       - bubble-server
+    labels:
+      - "traefik.http.routers.bubble_br.tls=true"
+      - "traefik.http.routers.bubble_br.rule=Host(`bubble.samsilver.ca`)"
     networks:
       - web
 
