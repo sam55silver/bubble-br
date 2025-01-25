@@ -4,8 +4,8 @@ const http = require("http").createServer(app);
 const { Server } = require("socket.io");
 
 const MAP_SIZE = {
-    width: 100,
-    height: 100,
+    width: 800,
+    height: 700,
 };
 
 const corsSettings = {
@@ -106,7 +106,7 @@ io.on("connection", (socket) => {
         rooms.forEach((users, roomId) => {
             if (users.has(socket.id)) {
                 users.delete(socket.id);
-                io.to(roomId).emit(GameEvents.PLAYER_DISCONNECTED, socket.id);
+                io.to(roomId).emit(GameEvents.PLAYER_DISCONNECTED, { id: socket.id });
 
                 // Remove player position
                 playerPositions.delete(socket.id);

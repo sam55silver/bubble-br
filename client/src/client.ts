@@ -40,7 +40,7 @@ export class GameClient {
 
         this.socket.on(GameEvents.PLAYER_DISCONNECTED, (data: any) => {
             console.log("User disconnected:", data);
-            //this.characterManager.removeCharacter(userId);
+            this.characterManager.removeCharacter(data.id);
         });
 
         this.socket.on(GameEvents.EXISTING_PLAYERS, (data: any) => {
@@ -53,12 +53,15 @@ export class GameClient {
         this.socket.on(GameEvents.PLAYER_INITIALIZED, (data: any) => {
             console.log("Player init:", data);
 
-            this.characterManager.createCharacter(
-                data.id,
-                data.ownPosition.x,
-                data.ownPosition.y,
-                true,
-            );
+            this.characterManager.createCharacter(data.id, data.position.x, data.position.y, true);
+
+            data.players.forEach((player: any) => {
+                this.characterManager.createCharacter(
+                    player.id,
+                    player.position.x,
+                    player.position.y,
+                );
+            });
         });
 
         this.socket.on(GameEvents.GAME_STATE, (data: any) => {
