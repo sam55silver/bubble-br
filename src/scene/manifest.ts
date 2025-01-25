@@ -39,6 +39,9 @@ export const manifest = {
                 waterTile: "/assets/Tiles/Water_Tile.png",
 
                 tiledMap: "/assets/Tiles/tiled_map.png",
+
+                // Weapons
+                pistol: "/assets/Weapon/Pistol_Wood_Light_A_1x1.png",
             },
         },
         // Add more bundles here...
