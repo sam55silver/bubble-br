@@ -100,7 +100,7 @@ body {
     height: 100vh;
     overflow: hidden;
     /* display:none to hide, :flex to show */
-    display: none;
+    display: flex;
     justify-content: center;
     align-items: center;
 
