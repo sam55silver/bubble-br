@@ -4,10 +4,10 @@ import { createScene } from "./scene/scene";
 import { Assets } from "pixi.js";
 
 (async () => {
-    const app = await createScene();
+    const [app, assets] = await createScene();
     document.getElementById("pixi-container")!.appendChild(app.view);
 
-    const playerTexture = await Assets.load("/assets/bunny.png");
+    const playerTexture = assets.player;
 
     const characterManger = new CharacterManager(app, playerTexture);
     const client = new GameClient(characterManger);
