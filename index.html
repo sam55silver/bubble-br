@@ -6,12 +6,31 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/style.css">
+    <script defer src="src/ui.js"></script>
     <title>PixiJS - Template</title>
 </head>
 
 <body>
+    <div id="connection-container">
+        <div id="connection-panel">
+            <label for="server-input" id="server-input-label">Connect to a server!</label><br>
+            <input type="text" id="server-input" name="server" size="30" placeholder="Enter server code..." maxlength="30"><br>
+            <input type="submit" id="connect-button" value="Connect">
+        </div>
+        <div id="connecting">
+            Connecting, please stand by...
+        </div>
+    </div>
+
     <div id="app">
         <div id="pixi-container"></div>
+            <div id="countdown-container">
+                <div id="countdown">3</div>
+            </div>
+            <div id="hitpoints-container">
+                <div id="hitpoints">100</div>
+            </div>
+        </div>
     </div>
     <script type="module" src="/src/main.ts"></script>
 </body>
