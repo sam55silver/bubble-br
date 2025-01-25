@@ -31,3 +31,13 @@ export interface PlayerMovedData {
         y: number;
     };
 }
+
+export interface Position {
+    x: number;
+    y: number;
+}
+
+export interface PlayerState {
+    id: string;
+    position: Position;
+}

@@ -1,7 +1,8 @@
 import { Sprite, Texture } from "pixi.js";
+import { Position } from "../types";
 
 export class Character extends Sprite {
-    id: string;
+    isLocal: boolean = false;
     speed: number = 5;
     direction = {
         up: false,
@@ -9,15 +10,20 @@ export class Character extends Sprite {
         left: false,
         right: false,
     };
-    interpolationDelay = 100; // ms
     lastUpdate?: number = undefined;
     targetX = 0;
     targetY = 0;
 
-    constructor(id: string, playerTexture: Texture, x: number, y: number) {
+    private interpolationDelay = 100; // ms
+    private lastServerUpdate: number = Date.now();
+    private previousPosition = { x: 0, y: 0 };
+    private targetPosition = { x: 0, y: 0 };
+    private isInterpolating = false;
+
+    constructor(playerTexture: Texture, x: number, y: number, isLocal = false) {
         super(playerTexture);
 
-        this.id = id;
+        this.isLocal = isLocal;
 
         // Set initial position
         this.x = x;
@@ -30,24 +36,53 @@ export class Character extends Sprite {
         this.setupKeyboardListeners();
     }
 
-    // Smooth position update with interpolation
-    updatePosition(x: number, y: number) {
+    updatePosition(newPos: Position) {
         const now = Date.now();
-        const lastUpdate = this.lastUpdate || now;
-        const deltaTime = now - lastUpdate;
 
-        // Store target position
-        this.targetY = y;
-        this.targetX = x;
+        // Store current position as previous
+        this.previousPosition = {
+            x: this.x,
+            y: this.y,
+        };
 
-        // Calculate interpolation
-        if (deltaTime < this.interpolationDelay) {
-            const factor = deltaTime / this.interpolationDelay;
-            this.x += (this.targetX - this.x) * factor;
-            this.y += (this.targetY - this.y) * factor;
+        // Update target position
+        this.targetPosition = newPos;
+
+        // Reset interpolation timer
+        this.lastServerUpdate = now;
+        this.isInterpolating = true;
+    }
+
+    // Call this in your game loop
+    interpolate(currentTime: number) {
+        if (!this.isInterpolating) return;
+
+        const timeSinceUpdate = currentTime - this.lastServerUpdate;
+        const interpolationProgress = Math.min(timeSinceUpdate / this.interpolationDelay, 1);
+
+        if (interpolationProgress >= 1) {
+            // Interpolation complete
+            this.x = this.targetPosition.x;
+            this.y = this.targetPosition.y;
+            this.isInterpolating = false;
         } else {
-            this.x = x;
-            this.y = y;
+            // Interpolate position
+            this.x =
+                this.previousPosition.x +
+                (this.targetPosition.x - this.previousPosition.x) * interpolationProgress;
+            this.y =
+                this.previousPosition.y +
+                (this.targetPosition.y - this.previousPosition.y) * interpolationProgress;
+        }
+    }
+
+    update(time: any) {
+        if (this.isLocal) {
+            this.updateLocal(time);
+            return { x: this.x, y: this.y };
+        } else {
+            this.interpolate(Date.now());
+            return null;
         }
     }
 

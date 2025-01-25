@@ -33,13 +33,6 @@ export class GameClient {
             this.characterManager.removeCharacter(data.id);
         });
 
-        this.socket.on(GameEvents.EXISTING_PLAYERS, (data: any) => {
-            console.log("Existing users in room:", data);
-            // users.forEach((userId: string) => {
-            //     this.characterManager.createCharacter(userId);
-            // });
-        });
-
         this.socket.on(GameEvents.PLAYER_INITIALIZED, (data: any) => {
             console.log("Player init:", data);
 
@@ -55,21 +48,7 @@ export class GameClient {
         });
 
         this.socket.on(GameEvents.WORLD_STATE, (data: any) => {
-            console.log("New World state:", data);
-
-            const localPlayerId = this.characterManager.localPlayer?.id;
-
-            data.state.forEach((player: any) => {
-                if (player.id == localPlayerId) {
-                    return;
-                }
-
-                this.characterManager.updateCharacterPosition(
-                    player.id,
-                    player.position.x,
-                    player.position.y,
-                );
-            });
+            this.characterManager.updateRemotePositions(data.state);
         });
     }
 
@@ -86,15 +65,14 @@ export class GameClient {
     }
 
     public update(time: any): void {
-        const localPlayer = this.characterManager.localPlayer;
+        const localPlayerPos: { x: number; y: number } | null = this.characterManager.update(time);
 
-        if (!localPlayer) {
+        if (localPlayerPos == null) {
             return;
         }
 
-        localPlayer.updateLocal(time);
         this.sendGameData(GameEvents.PLAYER_MOVE, {
-            position: { x: localPlayer.x, y: localPlayer.y },
+            position: localPlayerPos,
         });
     }
 
