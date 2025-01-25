@@ -16,7 +16,8 @@
             <label for="server-input" id="server-input-label">*game title here*</label><br>
             <input type="text" id="server-input" name="server" size="20" placeholder="Enter the server code..." maxlength="20"><br>
             <input type="text" id="username-input" name="username" size="20" placeholder="Enter a username..." maxlength="20"><br>
-            <input type="submit" id="connect-button" value="Connect">
+            <input type="submit" id="connect-button" value="Connect"><br>
+            <div id="controls">Controls: WASD for movement, spacebar to shoot</div>
         </div>
         <div id="connecting">
             Connecting, please stand by...
@@ -33,9 +34,12 @@
             </div>
         </div>
     </div>
+
     <div id="death-container">
-        <div id="death">You died.<br></div>
-        <input type="submit" id="main-menu-button" value="Main Menu">
+        <div id="death-panel">
+            <div id="death">You died.<br></div>
+            <input type="submit" id="main-menu-button" value="Main Menu">
+        </div>
     </div>
     <script type="module" src="/src/main.ts"></script>
 </body>
