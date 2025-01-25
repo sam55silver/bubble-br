@@ -148,10 +148,6 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: "Internal Server Error" });
 });
 
-app.get("/", (req, res) => {
-    res.send("Hello World");
-});
-
 const PORT = process.env.PORT || 5550;
 http.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);
