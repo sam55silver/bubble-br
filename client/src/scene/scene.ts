@@ -2,7 +2,7 @@ import { Application, Assets, Container, Texture } from "pixi.js";
 import { manifest } from "./manifest";
 import { Tile } from "./tile";
 
-export async function createScene(): Promise<Application> {
+export async function createScene(): Promise<[Application, Record<string, Texture>]> {
     // 1) Create and initialize Pixi Application
     const app = await createPixiApplication({
         backgroundColor: "#1099bb",
@@ -58,17 +58,17 @@ export async function createScene(): Promise<Application> {
     );
     layers.characters.addChild(crossBow);
 
-    const player = createSingleTile(
-        assets.player,
-        map.x + 250, // Center of map
-        map.y + 250, // Center of map
-        1,
-    );
-    layers.characters.addChild(player);
+    // const player = createSingleTile(
+    //     assets.player,
+    //     map.x + 250, // Center of map
+    //     map.y + 250, // Center of map
+    //     1,
+    // );
+    // layers.characters.addChild(player);
 
     // const crossBowBolt = createSingleTile(
     //     assets.crossBowBoltLight,
-    //     player.x, 
+    //     player.x,
     //     player.y + 135, // Same Y as player
     //     1,
     //     rotate90
@@ -78,7 +78,7 @@ export async function createScene(): Promise<Application> {
     Object.values(layers).forEach((layer) => scene.addChild(layer));
     app.stage.addChild(scene);
 
-    return app;
+    return [app, assets];
 }
 
 /**

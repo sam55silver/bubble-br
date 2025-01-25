@@ -11,6 +11,7 @@
   "dependencies": {
     "pixi-tiledmap": "^1.10.1",
     "pixi.js": "^8.6.2",
+    "socket.io-client": "^4.8.1",
     "tiled-to-pixi": "^2.0.0"
   },
   "devDependencies": {
