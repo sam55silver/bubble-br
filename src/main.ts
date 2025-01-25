@@ -1,4 +1,4 @@
-import { createScene } from "./scene";
+import { createScene } from "./scene/scene";
 
 (async () => {
     const app = await createScene();

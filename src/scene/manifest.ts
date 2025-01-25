@@ -1,5 +1,3 @@
-import { Application, Assets, Container, Sprite } from "pixi.js";
-
 export const manifest = {
     bundles: [
         {
@@ -39,59 +37,10 @@ export const manifest = {
                 pathTile: "/assets/Tiles/Path_Tile.png",
                 waterMiddle: "/assets/Tiles/Water_Middle.png",
                 waterTile: "/assets/Tiles/Water_Tile.png",
+
+                tiledMap: "/assets/Tiles/tiled_map.png",
             },
         },
         // Add more bundles here...
     ],
 };
-
-export async function createScene(): Promise<Application> {
-    // Create the PixiJS Application
-    const app = new Application();
-    await app.init({ background: "#1099bb", resizeTo: window });
-
-    // 1) Initialize Pixi Assets with manifest
-    await Assets.init({ manifest });
-
-    // 2) Load the bundle named "sceneAssets"
-    //    This returns a Record<string, Texture> keyed by your alias
-    const assets = await Assets.loadBundle("sceneAssets");
-
-    // Create a container for the entire scene
-    const scene = new Container();
-
-    // Create sub-layers (optional layering system)
-    const layers = {
-        background: new Container(),
-        terrain: new Container(),
-        decoration: new Container(),
-        buildings: new Container(),
-        characters: new Container(),
-        enemies: new Container(),
-    };
-
-    // Example 1: Add a grass tile in the background
-    //    The alias "grassTile" corresponds to the key in your manifest
-    const grass = new Sprite(assets.grassTile);
-    grass.position.set(50, 50);
-    grass.scale.set(2, 2);
-    layers.background.addChild(grass);
-
-    // Example 2: Add a tree decoration
-    const tree = new Sprite(assets.tree);
-    tree.position.set(100, 100);
-    layers.decoration.addChild(tree);
-
-    // Example 3: Add a house
-    const house = new Sprite(assets.house);
-    house.position.set(300, 200);
-    layers.buildings.addChild(house);
-
-    // Add all layers to the main scene container
-    Object.values(layers).forEach((layer) => scene.addChild(layer));
-
-    // Finally, add the scene container to the stage
-    app.stage.addChild(scene);
-
-    return app;
-}
