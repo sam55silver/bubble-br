@@ -10,10 +10,11 @@
 </head>
 
 <body>
-    <div id="connection-container">
+    <div id="main-menu-container">
         <div id="connection-panel">
-            <label for="server-input" id="server-input-label">Connect to a server!</label><br>
-            <input type="text" id="server-input" name="server" size="30" placeholder="Enter server code..." maxlength="30"><br>
+            <label for="server-input" id="server-input-label">*game title here*</label><br>
+            <input type="text" id="server-input" name="server" size="20" placeholder="Enter the server code..." maxlength="20"><br>
+            <input type="text" id="username-input" name="username" size="20" placeholder="Enter a username..." maxlength="20"><br>
             <input type="submit" id="connect-button" value="Connect">
         </div>
         <div id="connecting">
@@ -30,6 +31,10 @@
                 <div id="hitpoints">100</div>
             </div>
         </div>
+    </div>
+    <div id="death-container">
+        <div id="death">You died.<br></div>
+        <input type="submit" id="main-menu-button" value="Main Menu">
     </div>
     <script type="module" src="/src/main.ts"></script>
 </body>
