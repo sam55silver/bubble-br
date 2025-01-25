@@ -1,6 +1,6 @@
-import { Application, Assets, Container, Sprite, Texture } from "pixi.js";
-import { Tile } from "./tile";
+import { Application, Assets, Container, Texture } from "pixi.js";
 import { manifest } from "./manifest";
+import { Tile } from "./tile";
 
 export async function createScene(): Promise<Application> {
     // 1) Create and initialize Pixi Application
@@ -9,32 +9,71 @@ export async function createScene(): Promise<Application> {
         resizeTo: window,
     });
 
+    const rotate90 = Math.PI / 2;
+    const rotate45 = Math.PI / 4;
+    const rotateMinus90 = -Math.PI / 2;
+    const rotateMinus45 = -Math.PI / 4;
+
     // 2) load and retrieve needed assets
     const assets = await loadSceneAssets(manifest);
 
-    // 3) Create main scene container + sub-layers
     const scene = new Container();
     const layers = createSceneLayers();
 
-    // 4) Load and add the tiled map
     const scale = Math.max(
         window.innerWidth / assets.tiledMap.width,
         window.innerHeight / assets.tiledMap.height,
     );
-    const map = createSingleTile(assets.tiledMap, 0, 0, scale);
+
+    const map = createSingleTile(
+        assets.tiledMap,
+        window.innerWidth / 2, // Center X
+        window.innerHeight / 2, // Center Y
+        scale,
+    );
+
     layers.background.addChild(map);
 
-    // Add assets example
-    // const tree = createSingleTile(assets.tree, 128, 128, 1);
-    // layers.decoration.addChild(tree);
+    const windowBounds = {
+        left: 0,
+        right: window.innerWidth,
+        top: 0,
+        bottom: window.innerHeight,
+    };
 
-    // Add pistol
-    const pistol = createSingleTile(assets.pistol, 128, 128, 1);
-    layers.characters.addChild(pistol);
+    // to disallow the player from moving outside the map
+    const mapBounds = {
+        left: map.x - (map.width * scale) / 2,
+        right: map.x + (map.width * scale) / 2,
+        top: map.y - (map.height * scale) / 2,
+        bottom: map.y + (map.height * scale) / 2,
+    };
 
-    // Add bullet
-    const bullet = createSingleTile(assets.bullet, 126, 195, 0.3);
-    layers.characters.addChild(bullet);
+    const crossBow = createSingleTile(
+        assets.crossBowRed,
+        map.x + 250, // Center of map
+        map.y + 250 + 60, // 60 pixels below center
+        1,
+        rotate90,
+    );
+    layers.characters.addChild(crossBow);
+
+    const player = createSingleTile(
+        assets.player,
+        map.x + 250, // Center of map
+        map.y + 250, // Center of map
+        1,
+    );
+    layers.characters.addChild(player);
+
+    // const crossBowBolt = createSingleTile(
+    //     assets.crossBowBoltLight,
+    //     player.x, 
+    //     player.y + 135, // Same Y as player
+    //     1,
+    //     rotate90
+    // );
+    // layers.characters.addChild(crossBowBolt);
 
     Object.values(layers).forEach((layer) => scene.addChild(layer));
     app.stage.addChild(scene);
@@ -83,6 +122,6 @@ function createSceneLayers() {
 /**
  * Creates a single tile sprite at the specified coordinates and scale.
  */
-function createSingleTile(texture: Texture, x: number, y: number, scale = 1): Tile {
-    return new Tile(texture, x, y, scale);
+function createSingleTile(texture: Texture, x: number, y: number, scale = 1, rotation = 0): Tile {
+    return new Tile(texture, x, y, scale, rotation);
 }
