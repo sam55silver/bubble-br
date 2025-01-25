@@ -28,6 +28,10 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 
+function healthUpdater(hitpoints) {
+    // target the HP div and update the contents
+    document.getElementById("hitpoints").innerHTML = hitpoints;
+}
 
 
 // to do:
