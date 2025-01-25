@@ -15,6 +15,7 @@ window.addEventListener("DOMContentLoaded", () => {
         document.getElementById("connection-panel").style.display = "none";
         document.getElementById("connecting").style.display = "flex";
 
+
     });
 
     document.getElementById("main-menu-button").addEventListener("click", function() {
@@ -25,6 +26,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     });
 });
+
 
 
 
