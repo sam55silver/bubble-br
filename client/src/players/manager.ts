@@ -5,18 +5,18 @@ import { Application, Graphics, Rectangle, Sprite, Texture } from "pixi.js";
 
 export class CharacterManager {
     private app: Application;
-    private playerTexture: Texture;
+    private assets: Record<string, Texture>;
     private players = new Map();
     private bolts = new Map();
 
-    constructor(app: Application, playerTexture: Texture) {
+    constructor(app: Application, assets: Record<string, Texture>) {
         this.app = app;
-        this.playerTexture = playerTexture;
+        this.assets = assets;
     }
 
     // Creating characters
     createCharacter(playerId: string, x: number, y: number, isLocal = false) {
-        const character = new Character(this.playerTexture, x, y, isLocal);
+        const character = new Character(this.assets, x, y, isLocal);
         this.players.set(playerId, character);
         this.app.stage.addChild(character);
     }
@@ -32,13 +32,14 @@ export class CharacterManager {
     }
 
     // Update character position
-    updateRemotePositions(playerStates: PlayerState[]) {
+    updateRemoteStates(playerStates: PlayerState[]) {
         playerStates.forEach((playerState: PlayerState) => {
             const player: Character | null = this.players.get(playerState.id);
             if (!player || player.isLocal) {
                 return;
             }
             player.updatePosition(playerState.position);
+            player.facing = playerState.facing;
         });
     }
 
@@ -67,7 +68,14 @@ export class CharacterManager {
         });
 
         this.checkCollisions();
-        return localPlayerPos;
+        let localPlayer = null;
+        this.players.forEach((player: Character) => {
+            const state = player.update(time);
+            if (state != null) {
+                localPlayer = state;
+            }
+        });
+        return localPlayer;
     }
 
     private checkCollisions() {

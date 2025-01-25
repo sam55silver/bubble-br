@@ -1,0 +1,29 @@
+version: '3.8'
+
+networks:
+  web:
+    external: true
+
+services:
+  bubble-client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "5511:80"
+    depends_on:
+      - bubble-server
+    labels:
+      - "traefik.http.routers.bubble_br.tls=true"
+      - "traefik.http.routers.bubble_br.rule=Host(`bubble.samsilver.ca`)"
+    networks:
+      - web
+
+  bubble-server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+    networks:
+      - web

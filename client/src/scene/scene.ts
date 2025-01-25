@@ -10,10 +10,10 @@ export async function createScene(): Promise<[Application, Record<string, Textur
     });
 
     const rotate90 = Math.PI / 2;
-    const rotate45 = Math.PI / 4;
-    const rotateMinus90 = -Math.PI / 2;
-    const rotateMinus45 = -Math.PI / 4;
-
+    // const rotate45 = Math.PI / 4;
+    // const rotateMinus90 = -Math.PI / 2;
+    // const rotateMinus45 = -Math.PI / 4;
+    //
     // 2) load and retrieve needed assets
     const assets = await loadSceneAssets(manifest);
 
@@ -34,55 +34,21 @@ export async function createScene(): Promise<[Application, Record<string, Textur
 
     layers.background.addChild(map);
 
-    const windowBounds = {
-        left: 0,
-        right: window.innerWidth,
-        top: 0,
-        bottom: window.innerHeight,
-    };
+    // const windowBounds = {
+    //     left: 0,
+    //     right: window.innerWidth,
+    //     top: 0,
+    //     bottom: window.innerHeight,
+    // };
 
     // to disallow the player from moving outside the map
-    const mapBounds = {
-        left: map.x - (map.width * scale) / 2,
-        right: map.x + (map.width * scale) / 2,
-        top: map.y - (map.height * scale) / 2,
-        bottom: map.y + (map.height * scale) / 2,
-    };
+    // const mapBounds = {
+    //     left: map.x - (map.width * scale) / 2,
+    //     right: map.x + (map.width * scale) / 2,
+    //     top: map.y - (map.height * scale) / 2,
+    //     bottom: map.y + (map.height * scale) / 2,
+    // };
 
-    const crossBow = createSingleTile(
-        assets.crossBowRed,
-        map.x + 250, // Center of map
-        map.y + 250 + 60, // 60 pixels below center
-        1,
-        rotate90,
-    );
-    layers.characters.addChild(crossBow);
-
-    // const player = createSingleTile(
-    //     assets.player,
-    //     map.x + 250, // Center of map
-    //     map.y + 250, // Center of map
-    //     1,
-    // );
-    // layers.characters.addChild(player);
-
-    // const crossBowBolt = createSingleTile(
-    //     assets.crossBowBoltLight,
-    //     player.x,
-    //     player.y + 135, // Same Y as player
-    //     1,
-    //     rotate90
-    // );
-    // layers.characters.addChild(crossBowBolt);
-
-    const crossBowBolt = createSingleTile(
-        assets.crossBowBoltLight,
-        crossBow.x,
-        crossBow.y + 135, // Same Y as player
-        1,
-        rotate90
-    );
-    layers.characters.addChild(crossBowBolt);
 
     Object.values(layers).forEach((layer) => scene.addChild(layer));
     app.stage.addChild(scene);

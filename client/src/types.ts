@@ -40,4 +40,16 @@ export interface Position {
 export interface PlayerState {
     id: string;
     position: Position;
+    facing: Direction;
+}
+
+export enum Direction {
+    NORTH = "north",
+    NORTHEAST = "northeast",
+    EAST = "east",
+    SOUTHEAST = "southeast",
+    SOUTH = "south",
+    SOUTHWEST = "southwest",
+    WEST = "west",
+    NORTHWEST = "northwest",
 }
