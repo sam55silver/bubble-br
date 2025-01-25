@@ -40,8 +40,9 @@ export const manifest = {
 
                 tiledMap: "/assets/Tiles/tiled_map.png",
 
-                // pistol
+                // Weapons
                 pistol: "/assets/characters/Weapons/Pistol_Wood_Black_A_1x1.png",
+                bullet: "/assets/characters/Weapons/Bullet_Metal_Rusty_H_1x1.png",
             },
         },
         // Add more bundles here...

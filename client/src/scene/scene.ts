@@ -32,6 +32,10 @@ export async function createScene(): Promise<Application> {
     const pistol = createSingleTile(assets.pistol, 128, 128, 1);
     layers.characters.addChild(pistol);
 
+    // Add bullet
+    const bullet = createSingleTile(assets.bullet, 126, 195, 0.3);
+    layers.characters.addChild(bullet);
+
     Object.values(layers).forEach((layer) => scene.addChild(layer));
     app.stage.addChild(scene);
 
