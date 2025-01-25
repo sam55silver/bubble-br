@@ -2,8 +2,65 @@ body {
     margin: 0;
     padding: 0;
     color: rgba(255, 255, 255, 0.87);
-    background-color: #000000;
+    background-color: #1a1a1a;
+    font-family: Arial, Helvetica, sans-serif;
 }
+
+#connection-container {
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    height: 80vh;
+
+    padding: 20px;
+    
+    #connection-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        background-color: #ff4242;
+        border-radius: 10px;
+        padding: 40px;
+        
+        #server-input-label {
+            font-size: 2rem;
+            
+        }
+    
+        #server-input {
+            background-color: #ffff70;
+            padding: 5px;
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        #connect-button {
+            background-color: #42c9ff;
+            border-radius: 5px;
+            padding: 5px;
+        
+        }
+    
+        #connect-button:hover {
+            background-color: #6fd6ff;
+        }
+    }
+
+    #connecting {
+        display: none;
+
+        background-color: #ff4242;
+        border-radius: 10px;
+        padding: 40px;
+
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 2rem;
+    }
+}
+
+
 
 #app {
     width: 100%;
@@ -12,4 +69,35 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+
+    #countdown-container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        font-size: 7rem;
+        width: 20vh;
+        height: 20vh;
+        margin-left: -10vh;
+        margin-top: -10vh;
+        background-color: #ffff70;
+        color: #1a1a1a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #hitpoints-container {
+        position: absolute;
+        bottom: 5vh;
+        left: 5vh;
+        font-size: 4rem;
+        width: 15vh;
+        height: 10vh;
+        background-color: #ff4242;
+        color: #ffffff;
+        text-shadow: 4px 0px 3px #1a1a1a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
