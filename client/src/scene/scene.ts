@@ -75,6 +75,15 @@ export async function createScene(): Promise<[Application, Record<string, Textur
     // );
     // layers.characters.addChild(crossBowBolt);
 
+    const crossBowBolt = createSingleTile(
+        assets.crossBowBoltLight,
+        crossBow.x,
+        crossBow.y + 135, // Same Y as player
+        1,
+        rotate90
+    );
+    layers.characters.addChild(crossBowBolt);
+
     Object.values(layers).forEach((layer) => scene.addChild(layer));
     app.stage.addChild(scene);
 
