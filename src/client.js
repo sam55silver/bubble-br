@@ -10,7 +10,19 @@ export class WebRTCClient {
     this.characterManager = characterManager;
 
     this.configuration = {
-      iceServers: iceServers,
+      iceServers: [
+        { urls: "stun:stun.relay.metered.ca:80" },
+        {
+          urls: "turn:ca.relay.metered.ca:80",
+          username: "93ef3ea91ef54af4dae9ddb3",
+          credential: "m6sAGNyRmvAiATx5",
+        },
+        {
+          urls: "turn:ca.relay.metered.ca:80?transport=tcp",
+          username: "93ef3ea91ef54af4dae9ddb3",
+          credential: "m6sAGNyRmvAiATx5",
+        },
+      ],
     };
 
     this.retryAttempts = 0;
@@ -184,25 +196,11 @@ export class WebRTCClient {
 
   async handleOffer(userId, offer) {
     try {
-      if (!this.peerConnections.has(userId)) {
-        const peerConnection = new RTCPeerConnection(this.configuration);
-        this.peerConnections.set(userId, peerConnection);
-
-        peerConnection.onicecandidate = (event) => {
-          if (event.candidate) {
-            this.socket.emit("ice-candidate", {
-              target: userId,
-              candidate: event.candidate,
-            });
-          }
-        };
-
-        peerConnection.ondatachannel = (event) => {
-          this.setupDataChannel(userId, event.channel);
-        };
+      let peerConnection = this.peerConnections.get(userId);
+      if (!peerConnection) {
+        peerConnection = await this.createPeerConnection(userId);
       }
 
-      const peerConnection = this.peerConnections.get(userId);
       await peerConnection.setRemoteDescription(offer);
 
       const answer = await peerConnection.createAnswer();
