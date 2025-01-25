@@ -10,7 +10,7 @@ services:
       context: ./client
       dockerfile: Dockerfile
     ports:
-      - "5551:80"
+      - "5511:80"
     depends_on:
       - bubble-server
     labels:
