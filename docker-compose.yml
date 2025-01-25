@@ -1,5 +1,9 @@
 version: '3.8'
 
+networks:
+  web:
+    external: true
+
 services:
   client:
     build:
@@ -16,13 +20,7 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
-    ports:
-      - "5550:3000"
     environment:
       - NODE_ENV=production
     networks:
       - web
-
-networks:
-  web:
-    external: true

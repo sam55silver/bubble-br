@@ -16,7 +16,9 @@ export class GameClient {
     private roomId: string | null;
 
     constructor(characterManager: CharacterManager) {
-        this.socket = io(import.meta.env.PROD ? "/api" : "http://localhost:3000");
+        const url = import.meta.env.PROD ? window.location.href : "http://localhost:3000";
+        console.log(url);
+        this.socket = io(url);
         this.characterManager = characterManager;
         this.roomId = null;
         this.setupSocketListeners();
