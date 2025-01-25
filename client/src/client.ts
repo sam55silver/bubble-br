@@ -16,7 +16,7 @@ export class GameClient {
     private roomId: string | null;
 
     constructor(characterManager: CharacterManager) {
-        const url = import.meta.env.PROD ? window.location.href : "http://localhost:3000";
+        const url = import.meta.env.PROD ? window.location.href : "http://localhost:5550";
         console.log(url);
         this.socket = io(url);
         this.characterManager = characterManager;
