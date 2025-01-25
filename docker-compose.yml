@@ -12,7 +12,7 @@ services:
     ports:
       - "5551:80"
     depends_on:
-      - server
+      - bubble-server
     networks:
       - web
 
