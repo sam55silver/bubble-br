@@ -1,6 +1,7 @@
-import { Application, Assets, Sprite } from "pixi.js";
+import { Application, Assets } from "pixi.js";
 import { WebRTCClient } from "./client";
-import { CharacterManager } from "./room";
+import { CharacterManager } from "./manager";
+import { getTurnServers } from "./turnServer";
 
 (async () => {
   // Create a new application
@@ -16,7 +17,9 @@ import { CharacterManager } from "./room";
 
   const characterManager = new CharacterManager(app, playerTexture);
 
-  const client = new WebRTCClient(characterManager);
+  const iceServers = await getTurnServers();
+
+  const client = new WebRTCClient(iceServers, characterManager);
   client.joinRoom(1);
 
   characterManager.createCharacter(client.socket.id, true);

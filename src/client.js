@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 
 export class WebRTCClient {
-  constructor(characterManager) {
+  constructor(iceServers, characterManager) {
     this.socket = io("http://localhost:3000");
     this.peerConnections = new Map(); // Store RTCPeerConnection for each peer
     this.dataChannels = new Map(); // Store data channels for each peer
@@ -10,8 +10,11 @@ export class WebRTCClient {
     this.characterManager = characterManager;
 
     this.configuration = {
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+      iceServers: iceServers,
     };
+
+    this.retryAttempts = 0;
+    this.maxRetryAttempts = 3;
 
     this.setupSocketListeners();
   }
@@ -60,6 +63,42 @@ export class WebRTCClient {
       const peerConnection = new RTCPeerConnection(this.configuration);
       this.peerConnections.set(userId, peerConnection);
 
+      // ICE connection state monitoring
+      peerConnection.oniceconnectionstatechange = () => {
+        console.log(
+          `ICE connection state: ${peerConnection.iceConnectionState}`,
+        );
+
+        switch (peerConnection.iceConnectionState) {
+          case "failed":
+            if (this.retryAttempts < this.maxRetryAttempts) {
+              console.log("ICE failed, retrying connection...");
+              this.retryConnection(userId);
+            } else {
+              console.error("ICE failed permanently after retries");
+            }
+            break;
+          case "disconnected":
+            console.log("ICE disconnected, attempting reconnection...");
+            this.handleDisconnection(userId);
+            break;
+          case "connected":
+            console.log("ICE connected successfully");
+            this.retryAttempts = 0;
+            break;
+        }
+      };
+
+      // ICE candidate gathering state monitoring
+      peerConnection.onicegatheringstatechange = () => {
+        console.log(`ICE gathering state: ${peerConnection.iceGatheringState}`);
+      };
+
+      // ICE candidate error handling
+      peerConnection.onicecandidateerror = (event) => {
+        console.error("ICE candidate error:", event);
+      };
+
       // Create data channel
       const dataChannel = peerConnection.createDataChannel(
         `gameData-${userId}`,
@@ -89,6 +128,42 @@ export class WebRTCClient {
     } catch (err) {
       console.error("Error creating peer connection:", err);
     }
+  }
+
+  async retryConnection(userId) {
+    this.retryAttempts++;
+    console.log(`Retry attempt ${this.retryAttempts}`);
+
+    // Close existing connection
+    const oldConnection = this.peerConnections.get(userId);
+    if (oldConnection) {
+      oldConnection.close();
+    }
+
+    // Create new connection
+    await this.createPeerConnection(userId);
+
+    // Recreate offer
+    const peerConnection = this.peerConnections.get(userId);
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+
+    this.socket.emit("offer", {
+      target: userId,
+      offer: offer,
+    });
+  }
+
+  handleDisconnection(userId) {
+    setTimeout(() => {
+      const peerConnection = this.peerConnections.get(userId);
+      if (
+        peerConnection &&
+        peerConnection.iceConnectionState === "disconnected"
+      ) {
+        this.retryConnection(userId);
+      }
+    }, 2000); // Wait 2 seconds before trying to reconnect
   }
 
   setupDataChannel(userId, channel) {
