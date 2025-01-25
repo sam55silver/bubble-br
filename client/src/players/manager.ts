@@ -5,17 +5,17 @@ import { Application, Texture } from "pixi.js";
 
 export class CharacterManager {
     private app: Application;
-    private playerTexture: Texture;
+    private assets: Record<string, Texture>;
     private players = new Map();
 
-    constructor(app: Application, playerTexture: Texture) {
+    constructor(app: Application, assets: Record<string, Texture>) {
         this.app = app;
-        this.playerTexture = playerTexture;
+        this.assets = assets;
     }
 
     // Create a new character
     createCharacter(playerId: string, x: number, y: number, isLocal = false) {
-        const character = new Character(this.playerTexture, x, y, isLocal);
+        const character = new Character(this.assets, x, y, isLocal);
         this.players.set(playerId, character);
         this.app.stage.addChild(character);
     }

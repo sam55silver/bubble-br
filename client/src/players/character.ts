@@ -1,7 +1,7 @@
-import { Sprite, Texture } from "pixi.js";
-import { Position } from "../types";
+import { Container, Sprite, Texture } from "pixi.js";
+import { Direction, Position } from "../types";
 
-export class Character extends Sprite {
+export class Character extends Container {
     isLocal: boolean = false;
     speed: number = 5;
     direction = {
@@ -10,6 +10,7 @@ export class Character extends Sprite {
         left: false,
         right: false,
     };
+    facing: Direction = Direction.SOUTH;
     lastUpdate?: number = undefined;
     targetX = 0;
     targetY = 0;
@@ -20,17 +21,25 @@ export class Character extends Sprite {
     private targetPosition = { x: 0, y: 0 };
     private isInterpolating = false;
 
-    constructor(playerTexture: Texture, x: number, y: number, isLocal = false) {
-        super(playerTexture);
+    constructor(assets: Record<string, Texture>, x: number, y: number, isLocal = false) {
+        super();
+
+        const crossBowTexture: Texture = assets.crossBowRed;
+        const weapon = new Sprite(crossBowTexture);
+        weapon.anchor.set(0.5);
+        weapon.rotation = Math.PI / 2;
+        weapon.y = 40;
+        this.addChild(weapon);
+
+        const player = new Sprite(assets.player);
+        player.anchor.set(0.5);
+        this.addChild(player);
 
         this.isLocal = isLocal;
 
         // Set initial position
         this.x = x;
         this.y = y;
-
-        // Set anchor point to center
-        this.anchor.set(0.5);
 
         // Setup keyboard listeners
         this.setupKeyboardListeners();
@@ -79,10 +88,68 @@ export class Character extends Sprite {
     update(time: any) {
         if (this.isLocal) {
             this.updateLocal(time);
+            this.updateRotation();
             return { x: this.x, y: this.y };
         } else {
             this.interpolate(Date.now());
+            this.updateRotation();
             return null;
+        }
+    }
+
+    setFacing() {
+        // Check the current movement direction
+        const movingUp = this.direction.up;
+        const movingDown = this.direction.down;
+        const movingLeft = this.direction.left;
+        const movingRight = this.direction.right;
+
+        // Determine facing direction based on movement
+        if (movingUp && !movingLeft && !movingRight) {
+            this.facing = Direction.NORTH;
+        } else if (movingUp && movingRight) {
+            this.facing = Direction.NORTHEAST;
+        } else if (movingRight && !movingUp && !movingDown) {
+            this.facing = Direction.EAST;
+        } else if (movingDown && movingRight) {
+            this.facing = Direction.SOUTHEAST;
+        } else if (movingDown && !movingLeft && !movingRight) {
+            this.facing = Direction.SOUTH;
+        } else if (movingDown && movingLeft) {
+            this.facing = Direction.SOUTHWEST;
+        } else if (movingLeft && !movingUp && !movingDown) {
+            this.facing = Direction.WEST;
+        } else if (movingUp && movingLeft) {
+            this.facing = Direction.NORTHWEST;
+        }
+    }
+
+    private updateRotation() {
+        switch (this.facing) {
+            case Direction.NORTH:
+                this.rotation = Math.PI;
+                break;
+            case Direction.NORTHEAST:
+                this.rotation = Math.PI * (5 / 4);
+                break;
+            case Direction.EAST:
+                this.rotation = Math.PI * (3 / 2);
+                break;
+            case Direction.SOUTHEAST:
+                this.rotation = Math.PI * (7 / 4);
+                break;
+            case Direction.SOUTH:
+                this.rotation = 0;
+                break;
+            case Direction.SOUTHWEST:
+                this.rotation = Math.PI * (1 / 4);
+                break;
+            case Direction.WEST:
+                this.rotation = Math.PI / 2;
+                break;
+            case Direction.NORTHWEST:
+                this.rotation = Math.PI * (3 / 4);
+                break;
         }
     }
 
@@ -142,6 +209,7 @@ export class Character extends Sprite {
         if (this.direction.right) {
             this.x += this.speed * time.deltaTime;
         }
+        this.setFacing();
     }
 }
 
