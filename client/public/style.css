@@ -11,13 +11,17 @@
 body {
     margin: 0;
     padding: 0;
-    color: rgba(255, 255, 255, 0.87);
+    color: #ffffff;
     background-color: #1a1a1a;
     font-family: "Xolonium", sans-serif;
 }
 
+
+/* ------------------------------------------------------------- main menu styles */
+
 #main-menu-container {
     display: none;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     width: 100%;
@@ -27,51 +31,68 @@ body {
         display: flex;
         flex-direction: column;
         gap: 10px;
-        outline: 4px solid #b00000;
-        background-color: #ff4242;
+        outline: 4px solid #660000;
+        background-color: #ba3030;
         border-radius: 10px;
         padding: 40px;
         
         #server-input-label {
-            color:#ffffff;
             font-size: 3rem;
             text-align: center;
+            text-shadow: 2px 2px 4px #1a1a1a;
         }
     
         #server-input, #username-input {
-            background-color: #ffff70;
-            padding: 5px;
+            background-color: #ffffff;
+            color: #1a1a1a;
             border-radius: 5px;
-            outline: none;
+            padding: 5px;
             font-family: "Xolonium";
             font-size: 1.5rem;
+            box-shadow: 2px 2px 4px #1a1a1a;
+            
+            &:focus {
+                outline: solid 2px #660000;
+            }
         }
         
         #connect-button {
-            background-color: #42c9ff;
+            background-color: #ffffff;
+            color: #1a1a1a;
             border-radius: 5px;
             padding: 5px;
+            padding-top: 10px;
+            padding-bottom: 10px;
             font-family: "Xolonium";
             font-size: 2rem;
+            box-shadow: 2px 2px 4px #1a1a1a;
+            
+            &:hover {
+                background-color: #ffffffcc;
+            }
         }
     
-        #connect-button:hover {
-            background-color: #99e2ff;
+
+        #controls {
+            padding-top: 10px;
+            text-align: center;
+            text-shadow: 2px 2px 4px #1a1a1a;
         }
     }
 
     #connecting {
         display: none;
-        outline: 4px solid #b00000;
-        background-color: #ff4242;
-        color: #ffffff;
+        outline: 4px solid #660000;
+        background-color: #ba3030;
         border-radius: 10px;
         padding: 40px;
         font-size: 2rem;
+        text-shadow: 2px 2px 4px #1a1a1a;
     }
 }
 
 
+/* ------------------------------------------------------------- app styles */
 
 #app {
     width: 100%;
@@ -81,6 +102,39 @@ body {
     justify-content: center;
     align-items: center;
 
+    #mobile-controls-container {
+        position: absolute;
+        bottom: 0%;
+        left: 0%;
+        width: 100%;
+        display: none;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 6rem;
+        
+
+        #mobile-controls-left {
+            display: flex;
+            flex-direction: column;
+            align-items: space-between;
+            justify-content: center;
+            width: 300px;
+            height: 300px;
+
+            #a-d-container {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: space-between;
+            }
+        }
+
+        /* #mobile-controls-right {
+            
+        } */
+    }
+
     #countdown-container {
         position: absolute;
         top: 50%;
@@ -89,19 +143,17 @@ body {
         height: 200px;
         margin-left: -100px;
         margin-top: -100px;
-        outline: 8px solid #aaaa00;
         border-radius: 20px;
-        background-color: #ffff70;
-        box-shadow: 4px 2px 6px #1a1a1a;
+        background-color: #00000000;
         display: flex;
         align-items: center;
         justify-content: center;
 
         #countdown {
-            color: #ffffff;
             font-family: "Xolonium-Bold";
-            font-size: 9rem;
+            font-size: 12rem;
             -webkit-text-stroke: 6px #1a1a1a;
+            text-shadow: 2px 2px 4px #1a1a1a;
         }
     }
 
@@ -112,22 +164,24 @@ body {
         font-size: 4rem;
         width: 160px;
         height: 90px;
-        outline: 4px solid #b00000;
+        outline: 4px solid #660000;
         border-radius: 10px;
-        background-color: #ff4242;
+        background-color: #ba3030;
         box-shadow: 4px 2px 3px #1a1a1a;
-        display: flex;
+        display: none;
         align-items: center;
         justify-content: center;
 
         #hitpoints {
-            color: #ffffff;
             font-family: "Xolonium-Bold";
             -webkit-text-stroke: 4px #1a1a1a;
+            text-shadow: 2px 2px 4px #1a1a1a;
         }
     }
-
 }
+
+
+/* ------------------------------------------------------------- death styles */
 
 #death-container {
     width: 100%;
@@ -137,15 +191,41 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 20px;
-    
-    #death {
-        font-size: 3rem;
-    }
 
-    #main-menu-button {
-        padding: 5px;
-        font-family: "Xolonium";
-        font-size: 2rem;
+    #death-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        outline: 4px solid #660000;
+        border-radius: 10px;
+        background-color: #ba3030;
+        padding: 40px;
+
+        #death {
+            font-size: 3rem;
+            text-shadow: 2px 2px 4px #1a1a1a;
+        }
+    
+        #main-menu-button {
+            padding: 5px;
+            font-family: "Xolonium";
+            font-size: 2rem;
+            border-radius: 5px;
+            color: #1a1a1a;
+            box-shadow: 2px 2px 4px #1a1a1a;
+            
+            &:hover {
+                background-color: #ffffffcc;
+            }
+        }
     }
 }
+
+
+/* ------------------------------------------------------------- media queries */
+
+/* @media screen and (max-width: ) {
+
+} */
