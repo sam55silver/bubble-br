@@ -8,6 +8,9 @@ const MAP_SIZE = {
     height: 700,
 };
 
+const TICK_RATE = 60; // Number of ticks per second
+const TICK_INTERVAL = 1000 / TICK_RATE; // Milliseconds between ticks
+
 const corsSettings = {
     cors: {
         origin: "*",
@@ -20,7 +23,7 @@ const GameEvents = {
     NEW_PLAYER: "new_player",
     PLAYER_DISCONNECTED: "player_disconnected",
     EXISTING_PLAYERS: "existing_players",
-    GAME_STATE: "game_state",
+    WORLD_STATE: "world_state",
     PLAYER_MOVE: "player_move",
 };
 
@@ -119,6 +122,26 @@ io.on("connection", (socket) => {
     });
 });
 
+// Server tick function
+function serverTick() {
+    // Process each room
+    rooms.forEach((users, roomId) => {
+        if (users.size > 0) {
+            // Gather all player positions for this room
+            const worldState = Array.from(users).map((playerId) => ({
+                id: playerId,
+                position: playerPositions.get(playerId),
+            }));
+
+            // Broadcast world state to all players in the room
+            io.to(roomId).emit(GameEvents.WORLD_STATE, { state: worldState });
+        }
+    });
+}
+
+// Start the server tick
+const tickInterval = setInterval(serverTick, TICK_INTERVAL);
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error("Server error:", err);
@@ -133,6 +156,7 @@ http.listen(PORT, () => {
 // Graceful shutdown
 process.on("SIGTERM", () => {
     console.log("SIGTERM received. Shutting down gracefully...");
+    clearInterval(tickInterval);
     http.close(() => {
         console.log("Server closed");
         process.exit(0);

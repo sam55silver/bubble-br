@@ -1,24 +1,14 @@
 import { io, Socket } from "socket.io-client";
-import { GameEvents } from "../../lib.js";
 import { CharacterManager } from "./players/manager.js";
 
-interface GameData {
-    type: string;
-    state?: {
-        x: number;
-        y: number;
-    };
-}
-
-interface GameStateUpdate {
-    userId: string;
-    gameData: GameData;
-}
-
-interface EmitGameData {
-    roomId: string;
-    gameData: GameData;
-}
+export const GameEvents = {
+    PLAYER_INITIALIZED: "player_initialized",
+    NEW_PLAYER: "new_player",
+    PLAYER_DISCONNECTED: "player_disconnected",
+    EXISTING_PLAYERS: "existing_players",
+    WORLD_STATE: "world_state",
+    PLAYER_MOVE: "player_move",
+};
 
 export class GameClient {
     private socket: Socket;
@@ -43,13 +33,6 @@ export class GameClient {
             this.characterManager.removeCharacter(data.id);
         });
 
-        this.socket.on(GameEvents.EXISTING_PLAYERS, (data: any) => {
-            console.log("Existing users in room:", data);
-            // users.forEach((userId: string) => {
-            //     this.characterManager.createCharacter(userId);
-            // });
-        });
-
         this.socket.on(GameEvents.PLAYER_INITIALIZED, (data: any) => {
             console.log("Player init:", data);
 
@@ -64,8 +47,8 @@ export class GameClient {
             });
         });
 
-        this.socket.on(GameEvents.GAME_STATE, (data: any) => {
-            console.log("New Game state:", data);
+        this.socket.on(GameEvents.WORLD_STATE, (data: any) => {
+            this.characterManager.updateRemotePositions(data.state);
         });
     }
 
@@ -81,35 +64,16 @@ export class GameClient {
         });
     }
 
-    private handleGameData(userId: string, gameData: GameData): void {
-        console.log("Receiving game data:", gameData);
-
-        switch (gameData.type) {
-            case "character_update":
-                if (gameData.state) {
-                    const { x, y } = gameData.state;
-
-                    // Create character if it doesn't exist
-                    if (!this.characterManager.characters.get(userId)) {
-                        this.characterManager.createCharacter(userId);
-                    }
-
-                    // Update position
-                    this.characterManager.updateCharacterPosition(userId, x, y);
-                }
-                break;
-            // Add other game state handling cases here
-        }
-    }
-
     public update(time: any): void {
-        const localPlayer = this.characterManager.localPlayer;
-        if (localPlayer != null) {
-            localPlayer.updateLocal(time);
-            this.sendGameData(GameEvents.PLAYER_MOVE, {
-                position: { x: localPlayer.x, y: localPlayer.y },
-            });
+        const localPlayerPos: { x: number; y: number } | null = this.characterManager.update(time);
+
+        if (localPlayerPos == null) {
+            return;
         }
+
+        this.sendGameData(GameEvents.PLAYER_MOVE, {
+            position: localPlayerPos,
+        });
     }
 
     public disconnect(): void {
