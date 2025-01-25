@@ -84,18 +84,12 @@ io.on("connection", (socket) => {
         const { roomId, gameData } = data;
 
         // Update stored position
-        if (gameData.state) {
+        if (gameData.position) {
             playerPositions.set(socket.id, {
-                x: gameData.state.x,
-                y: gameData.state.y,
+                x: gameData.position.x,
+                y: gameData.position.y,
             });
         }
-
-        // Broadcast the game state to all other users in the room
-        socket.to(roomId).emit(GameEvents.GAME_STATE, {
-            userId: socket.id,
-            gameData: gameData,
-        });
     });
 
     // Handle disconnection

@@ -15,7 +15,7 @@ export class CharacterManager {
 
     // Create a new character
     createCharacter(playerId: string, x: number, y: number, isLocal = false) {
-        const character = new Character(this.playerTexture, x, y);
+        const character = new Character(playerId, this.playerTexture, x, y);
 
         if (isLocal) {
             this.localPlayer = character;

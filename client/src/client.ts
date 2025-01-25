@@ -35,7 +35,7 @@ export class GameClient {
     private setupSocketListeners(): void {
         this.socket.on(GameEvents.NEW_PLAYER, (data: any) => {
             console.log("User connected:", data);
-            //this.characterManager.createCharacter(userId);
+            this.characterManager.createCharacter(data.id, data.position.x, data.position.y);
         });
 
         this.socket.on(GameEvents.PLAYER_DISCONNECTED, (data: any) => {
@@ -74,11 +74,11 @@ export class GameClient {
         this.socket.emit(GameEvents.PLAYER_INITIALIZED, roomId);
     }
 
-    public sendGameData(event: any, data: GameData): void {
+    public sendGameData(event: any, data: any): void {
         this.socket.emit(event, {
             roomId: this.roomId,
             gameData: data,
-        } as EmitGameData);
+        });
     }
 
     private handleGameData(userId: string, gameData: GameData): void {
@@ -103,8 +103,12 @@ export class GameClient {
     }
 
     public update(time: any): void {
-        if (this.characterManager.localPlayer) {
-            this.characterManager.localPlayer.updateLocal(time);
+        const localPlayer = this.characterManager.localPlayer;
+        if (localPlayer != null) {
+            localPlayer.updateLocal(time);
+            this.sendGameData(GameEvents.PLAYER_MOVE, {
+                position: { x: localPlayer.x, y: localPlayer.y },
+            });
         }
     }
 

@@ -1,6 +1,7 @@
 import { Sprite, Texture } from "pixi.js";
 
 export class Character extends Sprite {
+    id: string;
     speed: number = 5;
     direction = {
         up: false,
@@ -13,8 +14,10 @@ export class Character extends Sprite {
     targetX = 0;
     targetY = 0;
 
-    constructor(playerTexture: Texture, x: number, y: number) {
+    constructor(id: string, playerTexture: Texture, x: number, y: number) {
         super(playerTexture);
+
+        this.id = id;
 
         // Set initial position
         this.x = x;
