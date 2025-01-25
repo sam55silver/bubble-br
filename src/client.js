@@ -10,19 +10,7 @@ export class WebRTCClient {
     this.characterManager = characterManager;
 
     this.configuration = {
-      iceServers: [
-        { urls: "stun:stun.relay.metered.ca:80" },
-        {
-          urls: "turn:ca.relay.metered.ca:80",
-          username: "93ef3ea91ef54af4dae9ddb3",
-          credential: "m6sAGNyRmvAiATx5",
-        },
-        {
-          urls: "turn:ca.relay.metered.ca:80?transport=tcp",
-          username: "93ef3ea91ef54af4dae9ddb3",
-          credential: "m6sAGNyRmvAiATx5",
-        },
-      ],
+      iceServers: [{ urls: "stun:stun.relay.metered.ca:80" }],
     };
 
     this.retryAttempts = 0;

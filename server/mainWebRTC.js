@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const http = require("http").createServer(app);
+const cors = require("cors");
 const { Server } = require("socket.io");
 
 const corsSettings = {
@@ -11,6 +12,9 @@ const corsSettings = {
 };
 
 const io = new Server(http, corsSettings);
+
+// Serve static files
+app.use(express.static("public"));
 
 // Store active rooms and their participants
 const rooms = new Map();
@@ -41,13 +45,28 @@ io.on("connection", (socket) => {
     socket.emit("users-in-room", usersInRoom);
   });
 
-  // Handle game state updates
-  socket.on("game-state-update", (data) => {
-    const { roomId, gameData } = data;
-    // Broadcast the game state to all other users in the room
-    socket.to(roomId).emit("game-state-update", {
-      userId: socket.id,
-      gameData: gameData,
+  // Handle WebRTC signaling
+  socket.on("offer", (data) => {
+    console.log(`Received offer from ${socket.id} to ${data.target}`);
+    io.to(data.target).emit("offer", {
+      offer: data.offer,
+      from: socket.id,
+    });
+  });
+
+  socket.on("answer", (data) => {
+    console.log(`Received answer from ${socket.id} to ${data.target}`);
+    io.to(data.target).emit("answer", {
+      answer: data.answer,
+      from: socket.id,
+    });
+  });
+
+  socket.on("ice-candidate", (data) => {
+    console.log(`Received ICE candidate from ${socket.id} to ${data.target}`);
+    io.to(data.target).emit("ice-candidate", {
+      candidate: data.candidate,
+      from: socket.id,
     });
   });
 
