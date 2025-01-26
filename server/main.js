@@ -67,15 +67,8 @@ io.on("connection", (socket) => {
     socket.on(GameEvents.JOIN_ROOM, ({ roomId, username }) => {
         console.log(`Socket ${socket.id} joining room ${roomId}`);
 
-        const isSpectator = username == "spectator";
-
         // Create room if it doesn't exist
         if (!rooms.has(roomId)) {
-            if (!isSpectator && process.env.NODE_ENV == "production") {
-                socket.emit(GameEvents.ROOM_DNE, {});
-                return;
-            }
-
             rooms.set(roomId, new Map());
             roomsState.set(roomId, "title");
         }
@@ -99,13 +92,10 @@ io.on("connection", (socket) => {
         socket.join(roomId);
 
         // Add player to room
-        if (!isSpectator) {
-            world.set(socket.id, initialState);
-        }
+        world.set(socket.id, initialState);
         worldState = Array.from(world.values());
 
-        const event = isSpectator ? GameEvents.JOIN_SPECTATOR : GameEvents.JOIN_ROOM;
-        socket.emit(event, { state: worldState, roomSize: PLAYER_LIMIT });
+        socket.emit(GameEvents.JOIN_ROOM, { state: worldState, roomSize: PLAYER_LIMIT });
     });
 
     socket.on(GameEvents.PLAYER_STATE, (data) => {

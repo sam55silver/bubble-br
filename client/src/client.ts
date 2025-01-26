@@ -1,8 +1,15 @@
 import { io, Socket } from "socket.io-client";
 import { CharacterManager } from "./players/manager.js";
 import { GameEvents, PlayerState } from "./types.js";
-import { AudioSystem } from "./audio/audio.js";
-import { showApp, showDeath, showDNE, showPlayerPanel, showTooFull, showWin, updatePlayerPanel } from "./ui";
+import {
+    showApp,
+    showDeath,
+    showDNE,
+    showPlayerPanel,
+    showTooFull,
+    showWin,
+    updatePlayerPanel,
+} from "./ui";
 import { BOLT_DAMAGE, GameApp } from "./common.js";
 import { Character } from "./players/character.js";
 
@@ -55,12 +62,7 @@ export class GameClient {
                 this.worldState = state;
                 this.roomSize = roomSize;
                 this.gameState = "playerRoom";
-                showPlayerPanel(
-                    this.worldState,
-                    roomSize,
-                    this,
-                    import.meta.env.DEV ? true : false,
-                );
+                showPlayerPanel(this.worldState, roomSize, this, true);
             },
         );
 
