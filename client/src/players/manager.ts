@@ -1,5 +1,7 @@
 import { CollisionSystem } from "../collision/collision";
 import { PlayerState } from "../types";
+import { Direction, PlayerState, Position } from "../types";
+import { Bolt } from "./bolt";
 import { Character } from "./character";
 
 import { Application, Graphics, Rectangle, Sprite, Texture } from "pixi.js";
@@ -9,6 +11,7 @@ export class CharacterManager {
     private assets: Record<string, Texture>;
     private players = new Map();
     private collisionSystem: CollisionSystem;
+    private bolts: { id: string; bolt: Bolt }[] = [];
 
     constructor(app: Application, assets: Record<string, Texture>) {
         this.app = app;
@@ -17,7 +20,7 @@ export class CharacterManager {
     }
 
     createCharacter(playerId: string, x: number, y: number, isLocal = false) {
-        const character = new Character(this.assets, x, y, isLocal);
+        const character = new Character(playerId, this.assets, x, y, isLocal);
         this.players.set(playerId, character);
         this.app.stage.addChild(character);
         this.collisionSystem.addCharacter(character);
@@ -44,6 +47,12 @@ export class CharacterManager {
             player.updatePosition(playerState.position);
             player.facing = playerState.facing;
         });
+    }
+
+    spawnBolt(id: string, pos: Position, facing: Direction) {
+        const bolt = new Bolt(this.assets, pos, facing);
+        this.app.stage.addChild(bolt);
+        this.bolts.push({ id, bolt });
     }
 
     update(time: any) {
@@ -75,10 +84,18 @@ export class CharacterManager {
         let localPlayer = null;
         this.players.forEach((player: Character) => {
             const state = player.update(time);
-            if (state != null) {
+            if (player.isLocal) {
                 localPlayer = state;
+                if (player.shooting) {
+                    this.spawnBolt(player.id, { x: player.x, y: player.y }, player.facing);
+                    player.shooting = false;
+                }
             }
         });
+        this.bolts.forEach(({ bolt }) => {
+            bolt.update(time);
+        });
+
         return localPlayer;
     }
 }
