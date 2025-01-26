@@ -53,7 +53,12 @@ export class GameClient {
                 this.worldState = state;
                 this.roomSize = roomSize;
                 this.gameState = "playerRoom";
-                showPlayerPanel(this.worldState, roomSize, this);
+                showPlayerPanel(
+                    this.worldState,
+                    roomSize,
+                    this,
+                    import.meta.env.DEV ? true : false,
+                );
             },
         );
 

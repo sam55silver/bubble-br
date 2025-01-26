@@ -54,7 +54,7 @@ io.on("connection", (socket) => {
 
         // Create room if it doesn't exist
         if (!rooms.has(roomId)) {
-            if (!isSpectator) {
+            if (!isSpectator && process.env.NODE_ENV == "production") {
                 socket.emit(GameEvents.ROOM_DNE, {});
                 return;
             }
