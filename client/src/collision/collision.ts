@@ -6,9 +6,16 @@ export class CollisionSystem {
     private characters: Set<Character>;
     private projectiles: Set<Container>;
 
+    private projectiles: Set<Sprite>;
+    public localPlayerId: string | null = null;
+
     constructor() {
         this.characters = new Set();
         this.projectiles = new Set();
+    }
+
+    isLocal(character: Character): boolean {
+        return this.localPlayerId == character.id;
     }
 
     addCharacter(character: Character) {
@@ -37,11 +44,20 @@ export class CollisionSystem {
             }),
         );
 
+        const charactersArray = Array.from(this.characters);
+        for (let i = 0; i < charactersArray.length; i++) {
+            for (let j = i + 1; j < charactersArray.length; j++) {
+                const char1 = charactersArray[i];
+                const char2 = charactersArray[j];
+
+                if (this.checkCharacterCollision(char1, char2)) {
+                    this.handleCharacterCollision(char1, char2);
+
         // Check character-projectile collisions
         for (const character of this.characters) {
             for (const projectile of this.projectiles) {
                 if (this.checkCharacterProjectileCollision(character, projectile)) {
-                    this.handleCharacterProjectileCollision(character, projectile);
+                    this.handleCharacterProjectileCollision(character);
                 }
             }
         }
@@ -125,11 +141,11 @@ export class CollisionSystem {
 
         console.log(`Collision detected between Characters`);
 
-        if (char1.isLocal) {
+        if (this.isLocal(char1)) {
             char1.x -= Math.cos(angle) * pushDistance;
             char1.y -= Math.sin(angle) * pushDistance;
         }
-        if (char2.isLocal) {
+        if (this.isLocal(char2)) {
             char2.x += Math.cos(angle) * pushDistance;
             char2.y += Math.sin(angle) * pushDistance;
         }

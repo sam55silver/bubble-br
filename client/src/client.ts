@@ -80,6 +80,7 @@ export class GameClient {
 
             this.localPlayerId = this.socket.id || null;
             this.characterManager.localPlayerId = this.localPlayerId;
+            this.characterManager.collisionSystem.localPlayerId = this.localPlayerId;
 
             state.forEach((player: PlayerState) => {
                 this.characterManager.createCharacter(player);

@@ -9,8 +9,8 @@ import { Texture } from "pixi.js";
 export class CharacterManager {
     private app: GameApp;
     private assets: Record<string, Texture>;
-    private collisionSystem: CollisionSystem;
 
+    public collisionSystem: CollisionSystem;
     public players: Map<string, Character> = new Map();
     public localPlayerId: string | null = null;
 
@@ -113,6 +113,6 @@ export class CharacterManager {
             }
         });
 
-        this.collisionSystem.update(time);
+        this.collisionSystem.update();
     }
 }
