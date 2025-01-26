@@ -28,29 +28,10 @@ export class GameClient {
     }
 
     private setupSocketListeners(): void {
-        // this.socket.on(GameEvents.NEW_PLAYER, (data: any) => {
-        //     console.log("User connected:", data);
-        //     this.characterManager.createCharacter(data.id, data.position.x, data.position.y);
-        // });
-
         this.socket.on(GameEvents.PLAYER_DISCONNECTED, (data: any) => {
             console.log("User disconnected:", data);
             this.characterManager.removeCharacter(data.id);
         });
-
-        // this.socket.on(GameEvents.PLAYER_INITIALIZED, (data: any) => {
-        //     console.log("Player init:", data);
-        //
-        //     this.characterManager.createCharacter(data.id, data.position.x, data.position.y, true);
-        //
-        //     data.players.forEach((player: any) => {
-        //         this.characterManager.createCharacter(
-        //             player.id,
-        //             player.position.x,
-        //             player.position.y,
-        //         );
-        //     });
-        // });
 
         this.socket.on(GameEvents.WORLD_STATE, ({ state }: { state: PlayerState[] }) => {
             this.worldState = state;
