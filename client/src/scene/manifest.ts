@@ -39,7 +39,7 @@ export const manifest = {
                 waterTile: "/assets/Tiles/Water_Tile.png",
 
                 tiledMap: "/assets/Tiles/tiled_map.png",
-                tiledMapLarge: "/assets/Tiles/tiled_map_large.png",
+                tiledMapLarge: "/assets/Tiles/tiled_map_large.webp",
 
                 // Weapons
                 pistol: "/assets/characters/Weapons/Pistol_Wood_Black_A_1x1.png",
