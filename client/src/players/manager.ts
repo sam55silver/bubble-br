@@ -23,7 +23,7 @@ export class CharacterManager {
     createCharacter(player: PlayerState) {
         const character = new Character(this.app, player, this.assets);
         this.players.set(player.id, character);
-        this.app.gameView.addChild(character);
+        this.app.gameLayer.addChild(character);
         this.collisionSystem.addCharacter(character);
 
         if (this.localPlayerId == player.id) {

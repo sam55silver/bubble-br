@@ -130,7 +130,7 @@ export class Character extends RemoteContainer {
 
     spawnBolt(id: string, pos: Position, facing: Direction) {
         const bolt = new Bolt(id, this.assets, pos, facing);
-        this.app.gameView.addChild(bolt);
+        this.app.gameLayer.addChild(bolt);
         this.bolts.set(id, bolt);
     }
 
@@ -141,6 +141,9 @@ export class Character extends RemoteContainer {
                 const id = Date.now().toString(36);
                 this.spawnBolt(id, { x: this.x, y: this.y }, this.facing);
                 this.shooting = false;
+            }
+            if (this.app.bubble?.isPointOutside(this.x, this.y)) {
+                this.health -= 0.05;
             }
         } else {
             this.interpolate(Date.now());

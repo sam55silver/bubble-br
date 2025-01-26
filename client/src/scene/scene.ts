@@ -6,14 +6,13 @@ import { GameApp } from "../common";
 export async function createScene(): Promise<[GameApp, Record<string, Texture>]> {
     const assets = await loadSceneAssets(manifest);
 
-    const gameView = new Container();
-    const app = new GameApp(gameView);
+    const app = new GameApp();
     await app.initApp({
-        backgroundColor: "#1099bb",
+        backgroundColor: "#1a1a1a",
         resizeTo: window,
     });
     const scene = new Container();
-    gameView.addChild(scene);
+    app.gameLayer.addChild(scene);
 
     const layers = createSceneLayers();
 

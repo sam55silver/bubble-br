@@ -1,6 +1,7 @@
 import { Application, Container } from "pixi.js";
 import { Direction, Position } from "./types";
 import { Character } from "./players/character";
+import { Bubble } from "./scene/bubble";
 
 export function getRotationFromDirection(direction: Direction): number {
     switch (direction) {
@@ -80,11 +81,12 @@ function lerp(start: number, end: number, amount: number) {
     return (1 - amount) * start + amount * end;
 }
 
-const MAP_WIDTH = 2396;
-const MAP_HEIGHT = 1769;
+const MAP_WIDTH = 2500;
+const MAP_HEIGHT = 2500;
 
 export class GameApp extends Application {
     public gameView: Container;
+    public gameLayer: Container;
     public cameraFollowTarget: Character | null = null;
     public worldBounds = {
         x: 0,
@@ -92,17 +94,24 @@ export class GameApp extends Application {
         width: MAP_WIDTH, // your world width
         height: MAP_HEIGHT, // your world height
     };
+    public bubble: Bubble | null = null;
 
-    constructor(gameView: Container) {
+    constructor() {
         super();
-        this.gameView = gameView;
+        this.gameView = new Container();
+        this.gameLayer = new Container();
+        this.gameView.addChild(this.gameLayer);
         this.stage.addChild(this.gameView);
     }
 
     async initApp(config: any) {
         await this.init(config);
+
+        this.bubble = new Bubble(this);
+        this.gameView.addChild(this.bubble);
         this.ticker.add(() => {
             this.cameraFollow();
+            this.bubble?.update();
         });
     }
 

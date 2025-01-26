@@ -4,8 +4,8 @@ const http = require("http").createServer(app);
 const { Server } = require("socket.io");
 
 const MAP_SIZE = {
-    width: 2396,
-    height: 1769,
+    width: 2500,
+    height: 2500,
 };
 
 const SPAWN_PADDING = 80;
