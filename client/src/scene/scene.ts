@@ -52,8 +52,7 @@ export async function createScene(): Promise<[GameApp, Record<string, Texture>]>
  */
 async function loadSceneAssets(manifest: any): Promise<Record<string, Texture>> {
     await Assets.init({ manifest });
-    const audioAssets = await Assets.loadBundle("audioAssets");
-    AudioSystem.getInstance().initialize(audioAssets);
+    AudioSystem.getInstance().initialize();
     return Assets.loadBundle("sceneAssets");
 }
 
