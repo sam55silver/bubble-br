@@ -3,20 +3,7 @@ import { CharacterManager } from "./players/manager";
 import { createScene } from "./scene/scene";
 import { showConnectingMsg, showConnectionPanel, showErrorMsg } from "./ui";
 
-async function startGame() {
-    client.joinRoom("1");
-
-    app.ticker.add((time: any) => {
-        client.update(time);
-    });
-
-    document.getElementById("pixi-container")!.appendChild(app.canvas);
-}
-
-function MainMenu() {
-    let connectBtn = document.getElementById("main-menu-button");
-    connectBtn?.addEventListener("click", () => {});
-}
+//document.getElementById("pixi-container")!.appendChild(app.canvas);
 
 async function main() {
     showConnectingMsg();
@@ -27,6 +14,9 @@ async function main() {
         const [app, assets] = await createScene();
         const characterManger = new CharacterManager(app, assets);
         client = new GameClient(characterManger);
+        app.ticker.add((time: any) => {
+            (client as GameClient).update(time);
+        });
     } catch (err) {
         showErrorMsg();
         return;

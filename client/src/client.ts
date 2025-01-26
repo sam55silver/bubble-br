@@ -1,26 +1,17 @@
 import { io, Socket } from "socket.io-client";
 import { CharacterManager } from "./players/manager.js";
-import { Direction, PlayerState, Position } from "./types.js";
+import { Direction, GameEvents, PlayerState, Position } from "./types.js";
 import { showDNE, showPlayerPanel, showTooFull } from "./ui.js";
-
-export const GameEvents = {
-    PLAYER_INITIALIZED: "player_initialized",
-    NEW_PLAYER: "new_player",
-    PLAYER_DISCONNECTED: "player_disconnected",
-    EXISTING_PLAYERS: "existing_players",
-    WORLD_STATE: "world_state",
-    PLAYER_STATE: "player_state",
-    PLAYER_DAMAGE: "player_damage",
-    JOIN_ROOM: "join_room",
-    ROOM_DNE: "room_dne",
-    ROOM_FULL: "room_full",
-};
 
 export class GameClient {
     private socket: Socket;
     private characterManager: CharacterManager;
     private roomId: string | null = null;
     private worldState: PlayerState[] = [];
+    private roomSize: number = 0;
+    private isSpectator: boolean = false;
+
+    public gameState = "connection";
 
     constructor(characterManager: CharacterManager) {
         this.characterManager = characterManager;
@@ -34,32 +25,33 @@ export class GameClient {
     }
 
     private setupSocketListeners(): void {
-        this.socket.on(GameEvents.NEW_PLAYER, (data: any) => {
-            console.log("User connected:", data);
-            this.characterManager.createCharacter(data.id, data.position.x, data.position.y);
-        });
+        // this.socket.on(GameEvents.NEW_PLAYER, (data: any) => {
+        //     console.log("User connected:", data);
+        //     this.characterManager.createCharacter(data.id, data.position.x, data.position.y);
+        // });
 
         this.socket.on(GameEvents.PLAYER_DISCONNECTED, (data: any) => {
             console.log("User disconnected:", data);
             this.characterManager.removeCharacter(data.id);
         });
 
-        this.socket.on(GameEvents.PLAYER_INITIALIZED, (data: any) => {
-            console.log("Player init:", data);
+        // this.socket.on(GameEvents.PLAYER_INITIALIZED, (data: any) => {
+        //     console.log("Player init:", data);
+        //
+        //     this.characterManager.createCharacter(data.id, data.position.x, data.position.y, true);
+        //
+        //     data.players.forEach((player: any) => {
+        //         this.characterManager.createCharacter(
+        //             player.id,
+        //             player.position.x,
+        //             player.position.y,
+        //         );
+        //     });
+        // });
 
-            this.characterManager.createCharacter(data.id, data.position.x, data.position.y, true);
-
-            data.players.forEach((player: any) => {
-                this.characterManager.createCharacter(
-                    player.id,
-                    player.position.x,
-                    player.position.y,
-                );
-            });
-        });
-
-        this.socket.on(GameEvents.WORLD_STATE, (data: any) => {
-            this.characterManager.updateRemoteStates(data.state);
+        this.socket.on(GameEvents.WORLD_STATE, ({ state }: { state: PlayerState[] }) => {
+            //this.characterManager.updateRemoteStates(data.state);
+            this.worldState = state;
         });
 
         this.socket.on(GameEvents.PLAYER_DAMAGE, (data: any) => {
@@ -75,7 +67,21 @@ export class GameClient {
             GameEvents.JOIN_ROOM,
             ({ state, roomSize }: { state: PlayerState[]; roomSize: number }) => {
                 this.worldState = state;
-                showPlayerPanel(this.worldState, roomSize);
+                this.roomSize = roomSize;
+                this.gameState = "playerRoom";
+                this.isSpectator = false;
+                showPlayerPanel(this.worldState, roomSize, this);
+            },
+        );
+
+        this.socket.on(
+            GameEvents.JOIN_SPECTATOR,
+            ({ state, roomSize }: { state: PlayerState[]; roomSize: number }) => {
+                this.worldState = state;
+                this.roomSize = roomSize;
+                this.gameState = "playerRoom";
+                this.isSpectator = true;
+                showPlayerPanel(this.worldState, roomSize, this, true);
             },
         );
 
@@ -109,14 +115,19 @@ export class GameClient {
     }
 
     public update(time: any): void {
-        const localPlayer: { facing: Direction; position: Position } | null =
-            this.characterManager.update(time);
-
-        if (localPlayer == null) {
+        if (this.gameState == "playerRoom") {
+            showPlayerPanel(this.worldState, this.roomSize, this, this.isSpectator);
             return;
-        }
+        } else if (this.gameState == "playing") {
+            const localPlayer: { facing: Direction; position: Position } | null =
+                this.characterManager.update(time);
 
-        this.sendGameData(GameEvents.PLAYER_STATE, localPlayer);
+            if (localPlayer == null) {
+                return;
+            }
+
+            this.sendGameData(GameEvents.PLAYER_STATE, localPlayer);
+        }
     }
 
     public disconnect(): void {

@@ -21,22 +21,20 @@ const corsSettings = {
 };
 
 const GameEvents = {
-    PLAYER_INITIALIZED: "player_initialized",
-    NEW_PLAYER: "new_player",
     PLAYER_DISCONNECTED: "player_disconnected",
-    EXISTING_PLAYERS: "existing_players",
     WORLD_STATE: "world_state",
     PLAYER_STATE: "player_state",
     JOIN_ROOM: "join_room",
     ROOM_DNE: "room_dne",
     ROOM_FULL: "room_full",
+    JOIN_SPECTATOR: "join_spectator",
 };
 
 const io = new Server(http, corsSettings);
 
 // Map of rooms, where each room contains a Map of player states
 // rooms: Map<roomId, Map<playerId, playerState>>
-const rooms = new Map().set("bubble", new Map());
+const rooms = new Map();
 
 function generateRandomPosition() {
     return {
@@ -50,10 +48,17 @@ io.on("connection", (socket) => {
 
     socket.on(GameEvents.JOIN_ROOM, ({ roomId, username }) => {
         console.log(`Socket ${socket.id} joining room ${roomId}`);
+
+        const isSpectator = username == "spectator";
+
         // Create room if it doesn't exist
         if (!rooms.has(roomId)) {
-            socket.emit(GameEvents.ROOM_DNE, {});
-            return;
+            if (!isSpectator) {
+                socket.emit(GameEvents.ROOM_DNE, {});
+                return;
+            }
+
+            rooms.set(roomId, new Map());
         }
 
         const world = rooms.get(roomId);
@@ -71,49 +76,16 @@ io.on("connection", (socket) => {
             health: 100,
         };
 
-        // Add player to room
-        world.set(socket.id, initialState);
         socket.join(roomId);
 
+        // Add player to room
+        if (!isSpectator) {
+            world.set(socket.id, initialState);
+        }
         worldState = Array.from(world.values());
 
-        socket.emit(GameEvents.JOIN_ROOM, { state: worldState, roomSize: PLAYER_LIMIT });
-    });
-
-    socket.on(GameEvents.PLAYER_INITIALIZED, (roomId) => {
-        console.log(`Socket ${socket.id} joining room ${roomId}`);
-
-        // Create room if it doesn't exist
-        if (!rooms.has(roomId)) {
-            rooms.set(roomId, new Map());
-        }
-
-        const roomPlayers = rooms.get(roomId);
-
-        // Create initial player state
-        const initialState = {
-            id: socket.id,
-            position: generateRandomPosition(),
-            facing: "south",
-            health: 100,
-        };
-
-        // Add player to room
-        roomPlayers.set(socket.id, initialState);
-        socket.join(roomId);
-
-        // Notify other users in the room about new player
-        socket.to(roomId).emit(GameEvents.NEW_PLAYER, initialState);
-
-        // Send list of existing players to the new participant
-        const existingPlayers = Array.from(roomPlayers.entries())
-            .filter(([id]) => id !== socket.id)
-            .map(([_, state]) => state);
-
-        socket.emit(GameEvents.PLAYER_INITIALIZED, {
-            ...initialState,
-            players: existingPlayers,
-        });
+        const event = isSpectator ? GameEvents.JOIN_SPECTATOR : GameEvents.JOIN_ROOM;
+        socket.emit(event, { state: worldState, roomSize: PLAYER_LIMIT });
     });
 
     socket.on(GameEvents.PLAYER_STATE, (data) => {

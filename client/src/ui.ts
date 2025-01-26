@@ -28,7 +28,8 @@
 // });
 //
 
-import { PlayerState } from "./types";
+import { GameClient } from "./client";
+import { GameEvents, PlayerState } from "./types";
 
 export function healthUpdater(hitpoints: number) {
     // target the HP div and update the contents
@@ -120,7 +121,12 @@ export function showDNE() {
     playerPanel.style.display = "none";
 }
 
-export function showPlayerPanel(worldState: PlayerState[], roomSize: number) {
+export function showPlayerPanel(
+    worldState: PlayerState[],
+    roomSize: number,
+    client: GameClient,
+    isSpectator: boolean = false,
+) {
     const errorMsg = document.getElementById("error") as HTMLElement;
     const connectionMsg = document.getElementById("connecting") as HTMLElement;
     const connectionPanel = document.getElementById("connection-panel") as HTMLElement;
@@ -128,7 +134,14 @@ export function showPlayerPanel(worldState: PlayerState[], roomSize: number) {
     const dne = document.getElementById("dne") as HTMLElement;
     const playerPanel = document.getElementById("player-panel") as HTMLElement;
 
+    const startBtn = document.getElementById("start-button") as HTMLElement;
+    if (isSpectator) {
+        startBtn.style.display = "block";
+        client.sendGameData(GameEvents.START_GAME, {});
+    }
+
     const players = document.getElementById("players") as HTMLElement;
+    players.innerHTML = "";
     const playerSize = document.getElementById("player-size") as HTMLElement;
     playerSize.textContent = `${worldState.length}/${roomSize}`;
 
