@@ -115,6 +115,21 @@ io.on("connection", (socket) => {
     socket.on("error", (error) => {
         console.error("Socket error:", error);
     });
+
+    socket.on(GameEvents.PLAYER_DAMAGE, (data) => {
+        const { roomId, targetId, amount } = data;
+        const roomPlayers = rooms.get(roomId);
+
+        if (roomPlayers && roomPlayers.has(targetId)) {
+            const targetPlayer = roomPlayers.get(targetId);
+            targetPlayer.health = Math.max(0, targetPlayer.health - amount);
+
+            io.to(roomId).emit(GameEvents.PLAYER_DAMAGE, {
+                targetId,
+                amount,
+            });
+        }
+    });
 });
 
 function serverTick() {

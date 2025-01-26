@@ -6,10 +6,12 @@ export class Bolt extends Container {
     speed: number = 20;
     facing: Direction;
     private alive: boolean = true;
+    shooterId: string;
 
-    constructor(assets: Record<string, Texture>, position: Position, direction: Direction) {
+    constructor(assets: Record<string, Texture>, position: Position, direction: Direction, shooterId: string) {
         super();
-
+        this.shooterId = shooterId;
+        
         this.zIndex = 1;
 
         // Create bullet sprite

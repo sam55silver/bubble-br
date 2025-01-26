@@ -1,9 +1,10 @@
-import { Rectangle, Sprite } from "pixi.js";
+import { Container, Rectangle, Sprite } from "pixi.js";
 import { Character } from "../players/character";
+import { Bolt } from "../players/bolt";
 
 export class CollisionSystem {
     private characters: Set<Character>;
-    private projectiles: Set<Sprite>;
+    private projectiles: Set<Container>;
 
     constructor() {
         this.characters = new Set();
@@ -18,7 +19,7 @@ export class CollisionSystem {
         this.characters.delete(character);
     }
 
-    addProjectile(projectile: Sprite) {
+    addProjectile(projectile: Container) {
         this.projectiles.add(projectile);
     }
 
@@ -27,23 +28,32 @@ export class CollisionSystem {
     }
 
     update(time: any) {
-        const charactersArray = Array.from(this.characters);
-        for (let i = 0; i < charactersArray.length; i++) {
-            for (let j = i + 1; j < charactersArray.length; j++) {
-                const char1 = charactersArray[i];
-                const char2 = charactersArray[j];
-                
-                if (this.checkCharacterCollision(char1, char2)) {
-                    this.handleCharacterCollision(char1, char2);
+        this.projectiles = new Set(
+            Array.from(this.projectiles).filter((projectile) => {
+                if (projectile instanceof Bolt && !projectile.isAlive()) {
+                    return false;
                 }
-            }
-        }
+                return true;
+            }),
+        );
 
         // Check character-projectile collisions
         for (const character of this.characters) {
             for (const projectile of this.projectiles) {
                 if (this.checkCharacterProjectileCollision(character, projectile)) {
                     this.handleCharacterProjectileCollision(character, projectile);
+                }
+            }
+        }
+
+        const charactersArray = Array.from(this.characters);
+        for (let i = 0; i < charactersArray.length; i++) {
+            for (let j = i + 1; j < charactersArray.length; j++) {
+                const char1 = charactersArray[i];
+                const char2 = charactersArray[j];
+
+                if (this.checkCharacterCollision(char1, char2)) {
+                    this.handleCharacterCollision(char1, char2);
                 }
             }
         }
@@ -62,17 +72,25 @@ export class CollisionSystem {
         return new Rectangle(newX, newY, newWidth, newHeight);
     }
 
-    private getProjectileBounds(projectile: Sprite): Rectangle {
-        const bounds = projectile.getBounds();
-        const widthShrinkFactor = 0.25;
-        const heightShrinkFactor = 0.4;
+    private getProjectileBounds(projectile: Container): Rectangle | null {
+        if (projectile instanceof Bolt && !projectile.isAlive()) {
+            return null;
+        }
 
-        const newWidth = bounds.width * widthShrinkFactor;
-        const newHeight = bounds.height * heightShrinkFactor;
-        const newX = projectile.x - newWidth / 2;
-        const newY = projectile.y - newHeight / 2;
+        try {
+            const bounds = projectile.getBounds();
+            const widthShrinkFactor = 0.25;
+            const heightShrinkFactor = 0.4;
 
-        return new Rectangle(newX, newY, newWidth, newHeight);
+            const newWidth = bounds.width * widthShrinkFactor;
+            const newHeight = bounds.height * heightShrinkFactor;
+            const newX = projectile.x - newWidth / 2;
+            const newY = projectile.y - newHeight / 2;
+
+            return new Rectangle(newX, newY, newWidth, newHeight);
+        } catch (e) {
+            return null;
+        }
     }
 
     private checkCollision(a: Rectangle, b: Rectangle): boolean {
@@ -90,9 +108,12 @@ export class CollisionSystem {
         return this.checkCollision(bounds1, bounds2);
     }
 
-    private checkCharacterProjectileCollision(character: Character, projectile: Sprite): boolean {
+    private checkCharacterProjectileCollision(character: Character, projectile: Container): boolean {
         const charBounds = this.getCharacterBounds(character);
         const projectileBounds = this.getProjectileBounds(projectile);
+        if (!projectileBounds) {
+            return false;
+        }
         return this.checkCollision(charBounds, projectileBounds);
     }
 
@@ -114,9 +135,20 @@ export class CollisionSystem {
         }
     }
 
-    private handleCharacterProjectileCollision(character: Character, projectile: Sprite): void {
+    private handleCharacterProjectileCollision(character: Character, projectile: Container): void {
+        if (projectile instanceof Bolt && character.id === projectile.shooterId) {
+            return;
+        }
         console.log(`Collision detected between Character and Projectile`);
         character.tint = 0xff0000;
+        character.takeDamage(10);
+
+        if (projectile instanceof Bolt) {
+            // send damage to server
+            
+            projectile.destroy();
+        }
+
         setTimeout(() => {
             character.tint = 0xffffff;
         }, 500);

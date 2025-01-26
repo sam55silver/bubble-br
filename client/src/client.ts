@@ -9,6 +9,7 @@ export const GameEvents = {
     EXISTING_PLAYERS: "existing_players",
     WORLD_STATE: "world_state",
     PLAYER_STATE: "player_state",
+    PLAYER_DAMAGE: "player_damage",
 };
 
 export class GameClient {
@@ -23,6 +24,10 @@ export class GameClient {
         this.characterManager = characterManager;
         this.roomId = null;
         this.setupSocketListeners();
+    }
+
+    public setCharacterManager(manager: CharacterManager): void {
+        this.characterManager = manager;
     }
 
     private setupSocketListeners(): void {
@@ -53,6 +58,15 @@ export class GameClient {
         this.socket.on(GameEvents.WORLD_STATE, (data: any) => {
             this.characterManager.updateRemoteStates(data.state);
         });
+
+        this.socket.on(GameEvents.PLAYER_DAMAGE, (data: any) => {
+            if (!this.characterManager) return;
+            
+            const player = this.characterManager.getPlayer(data.targetId);
+            if (player) {
+                player.takeForcedDamage(data.amount);
+            }
+        });
     }
 
     public joinRoom(roomId: string): void {
@@ -67,6 +81,14 @@ export class GameClient {
         });
     }
 
+    public sendDamage(targetId: string, amount: number): void {
+        this.socket.emit(GameEvents.PLAYER_DAMAGE, {
+            roomId: this.roomId,
+            targetId: targetId,
+            amount: amount
+        });
+    }
+    
     public update(time: any): void {
         const localPlayer: { facing: Direction; position: Position } | null =
             this.characterManager.update(time);

@@ -1,5 +1,4 @@
 import { CollisionSystem } from "../collision/collision";
-import { PlayerState } from "../types";
 import { Direction, PlayerState, Position } from "../types";
 import { Bolt } from "./bolt";
 import { Character } from "./character";
@@ -46,13 +45,26 @@ export class CharacterManager {
             }
             player.updatePosition(playerState.position);
             player.facing = playerState.facing;
+            player.health = playerState.health;
         });
     }
 
     spawnBolt(id: string, pos: Position, facing: Direction) {
-        const bolt = new Bolt(this.assets, pos, facing);
+        const bolt = new Bolt(this.assets, pos, facing, id);
         this.app.stage.addChild(bolt);
         this.bolts.push({ id, bolt });
+        this.collisionSystem.addProjectile(bolt);
+    }
+
+    getPlayer(id: string): Character | undefined {
+        return this.players.get(id);
+    }
+
+    handleDamage(sourceId: string, targetId: string, amount: number) {
+        const character = this.players.get(targetId);
+        if (character && character.isLocal) {
+            character.takeDamage(amount);
+        }
     }
 
     update(time: any) {

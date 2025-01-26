@@ -1,8 +1,12 @@
 import { Container, Sprite, Texture } from "pixi.js";
 import { Direction, Position } from "../types";
 import { getRotationFromDirection } from "../common";
+// import { healthUpdater } from "../ui"
 
 export class Character extends Container {
+    health: number = 100;
+    lastHitTime: number = 0;
+    readonly HIT_COOLDOWN = 500;
     isLocal: boolean = false;
     speed: number = 5;
     direction = {
@@ -208,6 +212,26 @@ export class Character extends Container {
         // Apply movement
         this.x += dx * this.speed * time.deltaTime;
         this.y += dy * this.speed * time.deltaTime;
+    }
+
+    takeDamage(amount: number): void {
+        const now = Date.now();
+        if (now - this.lastHitTime >= this.HIT_COOLDOWN) {
+            this.health = Math.max(0, this.health - amount);
+            this.lastHitTime = now;
+            
+            if (this.isLocal) {
+                // healthUpdater(this.health);
+                // checkDeath(this.health);
+            }
+        }
+    }
+    takeForcedDamage(amount: number): void {
+        this.health = Math.max(0, this.health - amount);
+        if (this.isLocal) {
+            // healthUpdater(this.health);
+            // checkDeath(this.health);
+        }
     }
 }
 

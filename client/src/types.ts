@@ -41,6 +41,7 @@ export interface PlayerState {
     id: string;
     position: Position;
     facing: Direction;
+    health: number;
 }
 
 export enum Direction {
