@@ -1,12 +1,20 @@
 import { Sprite, Texture, Text, Container, Graphics } from "pixi.js";
 import { BoltState, Direction, PlayerState, Position } from "../types";
-import { GameApp, getRotationFromDirection, RemoteContainer } from "../common";
+import {
+    BOLT_RELOAD,
+    BUBBLE_DAMAGE,
+    GameApp,
+    getRotationFromDirection,
+    PLAYER_MAX_HEALTH,
+    PLAYER_SPEED,
+    RemoteContainer,
+} from "../common";
 import { Bolt } from "./bolt";
 import { CollisionSystem } from "../collision/collision";
 import { AudioSystem } from "../audio/audio";
 
 export class Character extends RemoteContainer {
-    speed: number = 5;
+    speed: number = PLAYER_SPEED;
     direction = {
         up: false,
         down: false,
@@ -20,13 +28,14 @@ export class Character extends RemoteContainer {
     targetX = 0;
     targetY = 0;
     shooting = false;
+    reloading = false;
     id: string;
     username: string;
 
     collisionSystem: CollisionSystem;
 
     health: number;
-    maxHealth = 100;
+    maxHealth = PLAYER_MAX_HEALTH;
     healthBar: Graphics;
     healthWidth: number;
     healthHeight: number;
@@ -36,6 +45,9 @@ export class Character extends RemoteContainer {
     app: GameApp;
     assets: Record<string, Texture>;
     playerContainer: Container;
+    wholePlayer: Container;
+
+    alive: boolean = true;
 
     constructor(
         app: GameApp,
@@ -54,8 +66,11 @@ export class Character extends RemoteContainer {
 
         this.zIndex = 2;
 
+        this.wholePlayer = new Container();
+        this.addChild(this.wholePlayer);
+
         this.playerContainer = new Container();
-        this.addChild(this.playerContainer);
+        this.wholePlayer.addChild(this.playerContainer);
 
         const crossBowTexture: Texture = assets.crossBowRed;
         const weapon = new Sprite(crossBowTexture);
@@ -70,7 +85,7 @@ export class Character extends RemoteContainer {
 
         const textContainer = new Container();
         textContainer.y = -60;
-        this.addChild(textContainer);
+        this.wholePlayer.addChild(textContainer);
 
         const usernameText = new Text({
             text: state.username,
@@ -149,15 +164,23 @@ export class Character extends RemoteContainer {
     }
 
     update(time: any, isLocal: boolean = false) {
+        if (!this.alive) {
+            return;
+        }
+
         if (isLocal) {
             this.updateLocal(time);
             if (this.shooting) {
                 const id = Date.now().toString(36);
                 this.spawnBolt(id, { x: this.x, y: this.y }, this.facing);
+                this.reloading = true;
+                setTimeout(() => {
+                    this.reloading = false;
+                }, BOLT_RELOAD);
                 this.shooting = false;
             }
             if (this.app.bubble?.isPointOutside(this.x, this.y)) {
-                this.health -= 0.05;
+                this.health -= BUBBLE_DAMAGE;
             }
         } else {
             this.interpolate(Date.now());
@@ -245,7 +268,9 @@ export class Character extends RemoteContainer {
         };
 
         keys.space.press = () => {
-            this.shooting = true;
+            if (!this.reloading) {
+                this.shooting = true;
+            }
         };
     }
 

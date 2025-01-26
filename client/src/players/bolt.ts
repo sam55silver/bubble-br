@@ -1,13 +1,14 @@
 import { Sprite, Texture } from "pixi.js";
 import { BoltState, Direction, Position } from "../types";
-import { getRotationFromDirection, RemoteContainer } from "../common";
+import { BOLT_SPEED, getRotationFromDirection, RemoteContainer } from "../common";
 
 export class Bolt extends RemoteContainer {
-    speed: number = 20;
+    speed: number = BOLT_SPEED;
     facing: Direction;
     id: string;
     playerId: string;
-    private alive: boolean = true;
+    alive: boolean = true;
+    boltSprite: Sprite;
 
     constructor(
         playerId: string,
@@ -23,10 +24,10 @@ export class Bolt extends RemoteContainer {
         this.zIndex = 1;
 
         // Create bullet sprite
-        const bolt = new Sprite(assets.crossBowBoltDark); // Assuming you have a bullet texture
-        bolt.anchor.set(0.5);
-        bolt.rotation = Math.PI / 2;
-        this.addChild(bolt);
+        this.boltSprite = new Sprite(assets.crossBowBoltDark); // Assuming you have a bullet texture
+        this.boltSprite.anchor.set(0.5);
+        this.boltSprite.rotation = Math.PI / 2;
+        this.addChild(this.boltSprite);
 
         // Set initial position
         this.x = position.x;
@@ -42,6 +43,7 @@ export class Bolt extends RemoteContainer {
             id: this.id,
             position: { x: this.x, y: this.y },
             facing: this.facing,
+            alive: this.alive,
         };
     }
 

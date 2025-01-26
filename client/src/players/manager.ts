@@ -1,6 +1,5 @@
 import { CollisionSystem } from "../collision/collision";
-import { BoltState, Direction, PlayerState, Position } from "../types";
-import { Bolt } from "./bolt";
+import { BoltState, PlayerState } from "../types";
 import { GameApp } from "../common";
 import { Character } from "./character";
 
@@ -13,6 +12,7 @@ export class CharacterManager {
     public collisionSystem: CollisionSystem;
     public players: Map<string, Character> = new Map();
     public localPlayerId: string | null = null;
+    public charsHit: Character[] = [];
 
     constructor(app: GameApp, assets: Record<string, Texture>) {
         this.app = app;
@@ -34,11 +34,10 @@ export class CharacterManager {
     removeCharacter(playerId: string) {
         const character = this.players.get(playerId);
         if (character) {
-            if (character.parent) {
-                character.parent.removeChild(character);
-            }
             this.collisionSystem.removeCharacter(character);
             this.players.delete(playerId);
+            character.alive = false;
+            character.wholePlayer.destroy();
         }
     }
 
@@ -57,7 +56,7 @@ export class CharacterManager {
             playerState.bolts.forEach((boltState: BoltState) => {
                 const bolt = player.bolts.get(boltState.id);
                 if (!bolt) {
-                    player.spawnBolt(player.id, boltState.position, boltState.facing);
+                    player.spawnBolt(boltState.id, boltState.position, boltState.facing);
                 } else {
                     bolt.updatePosition(boltState.position);
                 }
@@ -106,6 +105,7 @@ export class CharacterManager {
             }
         });
 
-        this.collisionSystem.update();
+        const charsHit = this.collisionSystem.update();
+        this.charsHit = this.charsHit.concat(charsHit);
     }
 }

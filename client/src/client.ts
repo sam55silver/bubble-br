@@ -1,9 +1,10 @@
 import { io, Socket } from "socket.io-client";
 import { CharacterManager } from "./players/manager.js";
 import { GameEvents, PlayerState } from "./types.js";
-import { showApp, showDNE, showPlayerPanel, showTooFull, updatePlayerPanel } from "./ui.js";
-import { GameApp } from "./common.js";
 import { AudioSystem } from "./audio/audio.js";
+import { showApp, showDeath, showDNE, showPlayerPanel, showTooFull, updatePlayerPanel } from "./ui";
+import { BOLT_DAMAGE, GameApp } from "./common.js";
+import { Character } from "./players/character.js";
 
 export class GameClient {
     private socket: Socket;
@@ -73,19 +74,24 @@ export class GameClient {
             },
         );
 
-        this.socket.on(GameEvents.START_GAME, ({ state }: { state: PlayerState[] }) => {
-            showApp();
-            this.gameState = "playing";
-            this.worldState = state;
-            document.getElementById("pixi-container")!.appendChild(this.app.canvas);
-            this.localPlayerId = this.socket.id || null;
-            this.characterManager.localPlayerId = this.localPlayerId;
-            this.characterManager.collisionSystem.localPlayerId = this.localPlayerId;
+        this.socket.on(
+            GameEvents.START_GAME,
+            ({ state, radius }: { state: PlayerState[]; radius: number }) => {
+                showApp();
+                this.app.bubble?.setRadius(radius);
+                this.gameState = "playing";
+                this.worldState = state;
+                document.getElementById("pixi-container")!.appendChild(this.app.canvas);
 
-            state.forEach((player: PlayerState) => {
-                this.characterManager.createCharacter(player);
-            });
-        });
+                this.localPlayerId = this.socket.id || null;
+                this.characterManager.localPlayerId = this.localPlayerId;
+                this.characterManager.collisionSystem.localPlayerId = this.localPlayerId;
+
+                state.forEach((player: PlayerState) => {
+                    this.characterManager.createCharacter(player);
+                });
+            },
+        );
 
         this.socket.on(GameEvents.ROOM_DNE, () => {
             showDNE();
@@ -93,6 +99,21 @@ export class GameClient {
 
         this.socket.on(GameEvents.ROOM_FULL, () => {
             showTooFull();
+        });
+
+        this.socket.on(GameEvents.PLAYER_DEAD, ({ id }: { id: string }) => {
+            this.characterManager.removeCharacter(id);
+            if (this.localPlayerId == id) {
+                showDeath();
+            }
+        });
+
+        this.socket.on(GameEvents.BUBBLE_RADIUS, ({ radius }: { radius: number }) => {
+            this.app.bubble?.setRadius(radius);
+        });
+
+        this.socket.on(GameEvents.PLAYER_WIN, () => {
+            showWin();
         });
     }
 
@@ -133,6 +154,11 @@ export class GameClient {
             if (localPlayer) {
                 this.sendGameData(GameEvents.PLAYER_STATE, localPlayer.toPlayerState());
             }
+
+            this.characterManager.charsHit.forEach((player: Character) => {
+                this.sendDamage(player.id, BOLT_DAMAGE);
+            });
+            this.characterManager.charsHit = [];
         }
     }
 

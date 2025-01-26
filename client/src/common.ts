@@ -3,6 +3,15 @@ import { Direction, Position } from "./types";
 import { Character } from "./players/character";
 import { Bubble } from "./scene/bubble";
 
+export const BOLT_DAMAGE = 10;
+export const BOLT_SPEED = 20;
+export const BOLT_RELOAD = 500; //ms
+
+export const BUBBLE_DAMAGE = 1;
+
+export const PLAYER_SPEED = 5;
+export const PLAYER_MAX_HEALTH = 100;
+
 export function getRotationFromDirection(direction: Direction): number {
     switch (direction) {
         case Direction.NORTH:

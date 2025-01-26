@@ -4,7 +4,7 @@ import { Position } from "../types";
 
 export class Bubble extends Container {
     private bubbleMask: Graphics;
-    private radius: number = 1000;
+    private radius: number = 2500;
     app: GameApp;
 
     constructor(app: GameApp) {
