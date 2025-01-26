@@ -1,19 +1,20 @@
 import { CollisionSystem } from "../collision/collision";
 import { BoltState, Direction, PlayerState, Position } from "../types";
 import { Bolt } from "./bolt";
+import { GameApp } from "../common";
 import { Character } from "./character";
 
-import { Application, Texture } from "pixi.js";
+import { Texture } from "pixi.js";
 
 export class CharacterManager {
-    private app: Application;
+    private app: GameApp;
     private assets: Record<string, Texture>;
     private collisionSystem: CollisionSystem;
 
     public players: Map<string, Character> = new Map();
     public localPlayerId: string | null = null;
 
-    constructor(app: Application, assets: Record<string, Texture>) {
+    constructor(app: GameApp, assets: Record<string, Texture>) {
         this.app = app;
         this.assets = assets;
         this.collisionSystem = new CollisionSystem();
@@ -22,8 +23,12 @@ export class CharacterManager {
     createCharacter(player: PlayerState) {
         const character = new Character(this.app, player, this.assets);
         this.players.set(player.id, character);
-        this.app.stage.addChild(character);
+        this.app.gameView.addChild(character);
         this.collisionSystem.addCharacter(character);
+
+        if (this.localPlayerId == player.id) {
+            this.app.cameraFollowTarget = character;
+        }
     }
 
     removeCharacter(playerId: string) {
@@ -67,13 +72,15 @@ export class CharacterManager {
         });
     }
 
-    clampToWindow(player: Character) {
-        // clamp to screen
-        const halfWidth = player.width / 2;
-        const halfHeight = player.height / 2;
-
-        player.x = Math.max(halfWidth, Math.min(player.x, this.app.screen.width - halfWidth));
-        player.y = Math.max(halfHeight, Math.min(player.y, this.app.screen.height - halfHeight));
+    clampToBounds(player: Character) {
+        player.x = Math.max(
+            this.app.worldBounds.x,
+            Math.min(player.x, this.app.worldBounds.x + this.app.worldBounds.width),
+        );
+        player.y = Math.max(
+            this.app.worldBounds.y,
+            Math.min(player.y, this.app.worldBounds.y + this.app.worldBounds.height),
+        );
     }
 
     spawnBolt(id: string, pos: Position, facing: Direction) {
@@ -99,9 +106,8 @@ export class CharacterManager {
             const isLocal = this.localPlayerId == player.id;
             player.update(time, isLocal);
 
-            // Then local player
             if (isLocal) {
-                this.clampToWindow(player);
+                this.clampToBounds(player);
             }
         });
 

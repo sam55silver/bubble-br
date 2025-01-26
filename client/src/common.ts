@@ -1,5 +1,6 @@
-import { Container } from "pixi.js";
+import { Application, Container } from "pixi.js";
 import { Direction, Position } from "./types";
+import { Character } from "./players/character";
 
 export function getRotationFromDirection(direction: Direction): number {
     switch (direction) {
@@ -72,5 +73,48 @@ export class RemoteContainer extends Container {
                 this.previousPosition.y +
                 (this.targetPosition.y - this.previousPosition.y) * interpolationProgress;
         }
+    }
+}
+
+function lerp(start: number, end: number, amount: number) {
+    return (1 - amount) * start + amount * end;
+}
+
+const MAP_WIDTH = 2396;
+const MAP_HEIGHT = 1769;
+
+export class GameApp extends Application {
+    public gameView: Container;
+    public cameraFollowTarget: Character | null = null;
+    public worldBounds = {
+        x: 0,
+        y: 0,
+        width: MAP_WIDTH, // your world width
+        height: MAP_HEIGHT, // your world height
+    };
+
+    constructor(gameView: Container) {
+        super();
+        this.gameView = gameView;
+        this.stage.addChild(this.gameView);
+    }
+
+    async initApp(config: any) {
+        await this.init(config);
+        this.ticker.add(() => {
+            this.cameraFollow();
+        });
+    }
+
+    cameraFollow() {
+        if (this.cameraFollowTarget == null) {
+            return;
+        }
+
+        let targetX = this.screen.width / 2 - this.cameraFollowTarget.x;
+        let targetY = this.screen.height / 2 - this.cameraFollowTarget.y;
+
+        this.gameView.x = lerp(this.gameView.x, targetX, 0.1);
+        this.gameView.y = lerp(this.gameView.y, targetY, 0.1);
     }
 }

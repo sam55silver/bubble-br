@@ -4,9 +4,11 @@ const http = require("http").createServer(app);
 const { Server } = require("socket.io");
 
 const MAP_SIZE = {
-    width: 800,
-    height: 700,
+    width: 2396,
+    height: 1769,
 };
+
+const SPAWN_PADDING = 20;
 
 const TICK_RATE = 60;
 const TICK_INTERVAL = 1000 / TICK_RATE;
@@ -39,8 +41,8 @@ const rooms = new Map();
 
 function generateRandomPosition() {
     return {
-        x: Math.floor(Math.random() * MAP_SIZE.width),
-        y: Math.floor(Math.random() * MAP_SIZE.height),
+        x: Math.floor(Math.random() * (MAP_SIZE.width - 2 * SPAWN_PADDING) + padding),
+        y: Math.floor(Math.random() * (MAP_SIZE.height - 2 * SPAWN_PADDING) + padding),
     };
 }
 

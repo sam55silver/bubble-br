@@ -1,3 +1,4 @@
+import { Container } from "pixi.js";
 import { GameClient } from "./client";
 import { CharacterManager } from "./players/manager";
 import { createScene } from "./scene/scene";
@@ -12,12 +13,14 @@ async function main() {
 
     try {
         const [app, assets] = await createScene();
+
         const characterManger = new CharacterManager(app, assets);
         client = new GameClient(app, characterManger);
         app.ticker.add((time: any) => {
             client.update(time);
         });
     } catch (err) {
+        console.error(err);
         showErrorMsg();
         return;
     }

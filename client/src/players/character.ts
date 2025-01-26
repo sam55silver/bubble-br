@@ -1,6 +1,6 @@
-import { Application, Sprite, Texture } from "pixi.js";
+import { Sprite, Texture } from "pixi.js";
 import { BoltState, Direction, PlayerState, Position } from "../types";
-import { getRotationFromDirection, RemoteContainer } from "../common";
+import { GameApp, getRotationFromDirection, RemoteContainer } from "../common";
 import { Bolt } from "./bolt";
 
 export class Character extends RemoteContainer {
@@ -22,10 +22,10 @@ export class Character extends RemoteContainer {
     username: string;
     health: number;
     bolts: Map<string, Bolt> = new Map();
-    app: Application;
+    app: GameApp;
     assets: Record<string, Texture>;
 
-    constructor(app: Application, state: PlayerState, assets: Record<string, Texture>) {
+    constructor(app: GameApp, state: PlayerState, assets: Record<string, Texture>) {
         super();
         this.app = app;
         this.assets = assets;
@@ -57,7 +57,7 @@ export class Character extends RemoteContainer {
 
     spawnBolt(id: string, pos: Position, facing: Direction) {
         const bolt = new Bolt(id, this.assets, pos, facing);
-        this.app.stage.addChild(bolt);
+        this.app.gameView.addChild(bolt);
         this.bolts.set(id, bolt);
     }
 

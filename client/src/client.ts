@@ -2,7 +2,7 @@ import { io, Socket } from "socket.io-client";
 import { CharacterManager } from "./players/manager.js";
 import { GameEvents, PlayerState } from "./types.js";
 import { showApp, showDNE, showPlayerPanel, showTooFull, updatePlayerPanel } from "./ui.js";
-import { Application } from "pixi.js";
+import { GameApp } from "./common.js";
 
 export class GameClient {
     private socket: Socket;
@@ -10,12 +10,12 @@ export class GameClient {
     private roomId: string | null = null;
     private worldState: PlayerState[] = [];
     private roomSize: number = 0;
-    private app: Application;
+    private app: GameApp;
 
     public gameState = "connection";
     public localPlayerId: string | null = null;
 
-    constructor(app: Application, characterManager: CharacterManager) {
+    constructor(app: GameApp, characterManager: CharacterManager) {
         this.characterManager = characterManager;
         this.app = app;
         const url = import.meta.env.PROD ? window.location.href : "http://localhost:5550";
