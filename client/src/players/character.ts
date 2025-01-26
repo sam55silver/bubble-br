@@ -1,5 +1,6 @@
 import { Container, Sprite, Texture } from "pixi.js";
 import { Direction, Position } from "../types";
+import { getRotationFromDirection } from "../common";
 
 export class Character extends Container {
     isLocal: boolean = false;
@@ -14,6 +15,8 @@ export class Character extends Container {
     lastUpdate?: number = undefined;
     targetX = 0;
     targetY = 0;
+    shooting = false;
+    id: string;
 
     private interpolationDelay = 100; // ms
     private lastServerUpdate: number = Date.now();
@@ -21,8 +24,16 @@ export class Character extends Container {
     private targetPosition = { x: 0, y: 0 };
     private isInterpolating = false;
 
-    constructor(assets: Record<string, Texture>, x: number, y: number, isLocal = false) {
+    constructor(
+        id: string,
+        assets: Record<string, Texture>,
+        x: number,
+        y: number,
+        isLocal = false,
+    ) {
         super();
+        this.id = id;
+        this.zIndex = 2;
 
         const crossBowTexture: Texture = assets.crossBowRed;
         const weapon = new Sprite(crossBowTexture);
@@ -125,32 +136,7 @@ export class Character extends Container {
     }
 
     private updateRotation() {
-        switch (this.facing) {
-            case Direction.NORTH:
-                this.rotation = Math.PI;
-                break;
-            case Direction.NORTHEAST:
-                this.rotation = Math.PI * (5 / 4);
-                break;
-            case Direction.EAST:
-                this.rotation = Math.PI * (3 / 2);
-                break;
-            case Direction.SOUTHEAST:
-                this.rotation = Math.PI * (7 / 4);
-                break;
-            case Direction.SOUTH:
-                this.rotation = 0;
-                break;
-            case Direction.SOUTHWEST:
-                this.rotation = Math.PI * (1 / 4);
-                break;
-            case Direction.WEST:
-                this.rotation = Math.PI / 2;
-                break;
-            case Direction.NORTHWEST:
-                this.rotation = Math.PI * (3 / 4);
-                break;
-        }
+        this.rotation = getRotationFromDirection(this.facing);
     }
 
     setupKeyboardListeners() {
@@ -160,6 +146,7 @@ export class Character extends Container {
             a: keyboard("a"),
             s: keyboard("s"),
             d: keyboard("d"),
+            space: keyboard(" "),
         };
 
         // W key
@@ -193,23 +180,34 @@ export class Character extends Container {
         keys.d.release = () => {
             this.direction.right = false;
         };
+
+        keys.space.press = () => {
+            this.shooting = true;
+        };
     }
 
     updateLocal(time: any) {
-        // Update position based on direction
-        if (this.direction.up) {
-            this.y -= this.speed * time.deltaTime;
-        }
-        if (this.direction.down) {
-            this.y += this.speed * time.deltaTime;
-        }
-        if (this.direction.left) {
-            this.x -= this.speed * time.deltaTime;
-        }
-        if (this.direction.right) {
-            this.x += this.speed * time.deltaTime;
-        }
         this.setFacing();
+
+        let dx = 0;
+        let dy = 0;
+
+        if (this.direction.up) dy -= 1;
+        if (this.direction.down) dy += 1;
+        if (this.direction.left) dx -= 1;
+        if (this.direction.right) dx += 1;
+
+        // Normalize the direction vector if moving diagonally
+        if (dx !== 0 && dy !== 0) {
+            // Length of diagonal vector is sqrt(2), so divide by sqrt(2) to normalize
+            const length = Math.sqrt(dx * dx + dy * dy);
+            dx /= length;
+            dy /= length;
+        }
+
+        // Apply movement
+        this.x += dx * this.speed * time.deltaTime;
+        this.y += dy * this.speed * time.deltaTime;
     }
 }
 
