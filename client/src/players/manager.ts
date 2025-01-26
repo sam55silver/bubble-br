@@ -1,33 +1,35 @@
+import { CollisionSystem } from "../collision/collision";
 import { PlayerState } from "../types";
 import { Character } from "./character";
 
-import { Application, Texture } from "pixi.js";
+import { Application, Graphics, Rectangle, Sprite, Texture } from "pixi.js";
 
 export class CharacterManager {
     private app: Application;
     private assets: Record<string, Texture>;
     private players = new Map();
+    private collisionSystem: CollisionSystem;
 
     constructor(app: Application, assets: Record<string, Texture>) {
         this.app = app;
         this.assets = assets;
+        this.collisionSystem = new CollisionSystem();
     }
 
-    // Create a new character
     createCharacter(playerId: string, x: number, y: number, isLocal = false) {
         const character = new Character(this.assets, x, y, isLocal);
         this.players.set(playerId, character);
         this.app.stage.addChild(character);
+        this.collisionSystem.addCharacter(character);
     }
 
-    // Remove a character
     removeCharacter(playerId: string) {
         const character = this.players.get(playerId);
         if (character) {
-            // Remove from PIXI stage if needed
             if (character.parent) {
                 character.parent.removeChild(character);
             }
+            this.collisionSystem.removeCharacter(character);
             this.players.delete(playerId);
         }
     }
@@ -45,6 +47,31 @@ export class CharacterManager {
     }
 
     update(time: any) {
+        let localPlayerPos = null;
+
+        this.players.forEach((player: Character) => {
+            const pos = player.update(time);
+
+            if (pos != null) {
+                // clamp
+                const halfWidth = player.width / 2;
+                const halfHeight = player.height / 2;
+
+                player.x = Math.max(
+                    halfWidth,
+                    Math.min(player.x, this.app.screen.width - halfWidth),
+                );
+                player.y = Math.max(
+                    halfHeight,
+                    Math.min(player.y, this.app.screen.height - halfHeight),
+                );
+
+                localPlayerPos = { x: player.x, y: player.y };
+            }
+        });
+
+        this.collisionSystem.update(time);
+
         let localPlayer = null;
         this.players.forEach((player: Character) => {
             const state = player.update(time);

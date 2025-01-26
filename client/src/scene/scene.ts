@@ -49,6 +49,7 @@ export async function createScene(): Promise<[Application, Record<string, Textur
     //     bottom: map.y + (map.height * scale) / 2,
     // };
 
+
     Object.values(layers).forEach((layer) => scene.addChild(layer));
     app.stage.addChild(scene);
 
