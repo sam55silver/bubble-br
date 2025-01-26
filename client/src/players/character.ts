@@ -1,4 +1,4 @@
-import { Sprite, Texture } from "pixi.js";
+import { Sprite, Texture, Text, Container, Graphics } from "pixi.js";
 import { BoltState, Direction, PlayerState, Position } from "../types";
 import { GameApp, getRotationFromDirection, RemoteContainer } from "../common";
 import { Bolt } from "./bolt";
@@ -24,6 +24,7 @@ export class Character extends RemoteContainer {
     bolts: Map<string, Bolt> = new Map();
     app: GameApp;
     assets: Record<string, Texture>;
+    playerContainer: Container;
 
     constructor(app: GameApp, state: PlayerState, assets: Record<string, Texture>) {
         super();
@@ -36,16 +37,48 @@ export class Character extends RemoteContainer {
 
         this.zIndex = 2;
 
+        this.playerContainer = new Container();
+        this.addChild(this.playerContainer);
+
         const crossBowTexture: Texture = assets.crossBowRed;
         const weapon = new Sprite(crossBowTexture);
         weapon.anchor.set(0.5);
         weapon.rotation = Math.PI / 2;
         weapon.y = 40;
-        this.addChild(weapon);
+        this.playerContainer.addChild(weapon);
 
         const player = new Sprite(assets.player);
         player.anchor.set(0.5);
-        this.addChild(player);
+        this.playerContainer.addChild(player);
+
+        const textContainer = new Container();
+        textContainer.y = -60;
+        this.addChild(textContainer);
+
+        const usernameText = new Text({
+            text: state.username,
+            style: {
+                fontFamily: "Xolonium",
+                fontSize: 20,
+                fill: "white",
+                align: "center",
+            },
+        });
+        usernameText.anchor.set(0.5, 0.5);
+
+        const paddingX = 10; // Padding around the text
+        const paddingY = 6; // Padding around the text
+        const background = new Graphics()
+            .rect(
+                -usernameText.width / 2 - paddingX,
+                -usernameText.height / 2 - paddingY,
+                usernameText.width + paddingX * 2,
+                usernameText.height + paddingY * 2,
+            )
+            .fill(0x000000);
+        background.alpha = 0.5;
+        textContainer.addChild(background);
+        textContainer.addChild(usernameText);
 
         // Set initial position
         this.x = state.position.x;
@@ -108,7 +141,7 @@ export class Character extends RemoteContainer {
     }
 
     private updateRotation() {
-        this.rotation = getRotationFromDirection(this.facing);
+        this.playerContainer.rotation = getRotationFromDirection(this.facing);
     }
 
     setupKeyboardListeners() {
