@@ -20,7 +20,14 @@ export class Character extends RemoteContainer {
     shooting = false;
     id: string;
     username: string;
+
     health: number;
+    maxHealth = 100;
+    healthBar: Graphics;
+    healthWidth: number;
+    healthHeight: number;
+    healthBarColour = 0x22c55e;
+
     bolts: Map<string, Bolt> = new Map();
     app: GameApp;
     assets: Record<string, Texture>;
@@ -67,21 +74,41 @@ export class Character extends RemoteContainer {
         usernameText.anchor.set(0.5, 0.5);
 
         const paddingX = 10;
-        const paddingY = 6;
+        const paddingY = 5;
         const minWidth = 100;
-        const backgroundWidth = Math.max(usernameText.width + paddingX * 2, minWidth);
 
-        const background = new Graphics()
-            .rect(
-                -backgroundWidth / 2,
-                -usernameText.height / 2 - paddingY,
-                backgroundWidth,
-                usernameText.height + paddingY * 2,
-            )
-            .fill(0x000000);
-        background.alpha = 0.5;
-        textContainer.addChild(background);
+        this.healthWidth = Math.max(usernameText.width + paddingX * 2, minWidth);
+        this.healthHeight = usernameText.height + paddingY * 2;
+
+        // Create a container for the health bar
+        const healthBarContainer = new Container();
+        healthBarContainer.alpha = 0.5;
+        textContainer.addChild(healthBarContainer);
         textContainer.addChild(usernameText);
+
+        // Create background (grey/dark bar)
+        //
+        const healthBackground = new Graphics()
+            .rect(
+                -this.healthWidth / 2,
+                -this.healthHeight / 2,
+                this.healthWidth,
+                this.healthHeight,
+            )
+            .fill(0x333333);
+
+        // Create health bar (green bar)
+        this.healthBar = new Graphics()
+            .rect(
+                -this.healthWidth / 2,
+                -this.healthHeight / 2,
+                this.healthWidth,
+                this.healthHeight,
+            )
+            .fill(this.healthBarColour);
+
+        healthBarContainer.addChild(healthBackground);
+        healthBarContainer.addChild(this.healthBar);
 
         // Set initial position
         this.x = state.position.x;
@@ -89,6 +116,16 @@ export class Character extends RemoteContainer {
 
         // Setup keyboard listeners
         this.setupKeyboardListeners();
+    }
+
+    updateHealthBar() {
+        const healthPercentage = Math.max(0, Math.min(this.health / this.maxHealth, 1));
+        const barWidth = this.healthWidth * healthPercentage;
+
+        this.healthBar.clear();
+        this.healthBar
+            .rect(-this.healthWidth / 2, -this.healthHeight / 2, barWidth, this.healthHeight)
+            .fill(this.healthBarColour);
     }
 
     spawnBolt(id: string, pos: Position, facing: Direction) {
@@ -114,6 +151,7 @@ export class Character extends RemoteContainer {
         });
 
         this.updateRotation();
+        this.updateHealthBar();
     }
 
     setFacing() {
