@@ -8,7 +8,7 @@ const MAP_SIZE = {
     height: 1769,
 };
 
-const SPAWN_PADDING = 20;
+const SPAWN_PADDING = 80;
 
 const TICK_RATE = 60;
 const TICK_INTERVAL = 1000 / TICK_RATE;
@@ -41,8 +41,8 @@ const rooms = new Map();
 
 function generateRandomPosition() {
     return {
-        x: Math.floor(Math.random() * (MAP_SIZE.width - 2 * SPAWN_PADDING) + padding),
-        y: Math.floor(Math.random() * (MAP_SIZE.height - 2 * SPAWN_PADDING) + padding),
+        x: Math.floor(Math.random() * (MAP_SIZE.width - 2 * SPAWN_PADDING) + SPAWN_PADDING),
+        y: Math.floor(Math.random() * (MAP_SIZE.height - 2 * SPAWN_PADDING) + SPAWN_PADDING),
     };
 }
 

@@ -18,7 +18,7 @@ export async function createScene(): Promise<[GameApp, Record<string, Texture>]>
     const layers = createSceneLayers();
 
     const map = createSingleTile(
-        assets.tiledMap,
+        assets.tiledMapLarge,
         0, // Center X
         0, // Center Y
     );

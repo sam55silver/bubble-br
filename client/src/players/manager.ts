@@ -73,13 +73,15 @@ export class CharacterManager {
     }
 
     clampToBounds(player: Character) {
+        const padding = 20;
+
         player.x = Math.max(
-            this.app.worldBounds.x,
-            Math.min(player.x, this.app.worldBounds.x + this.app.worldBounds.width),
+            this.app.worldBounds.x + padding,
+            Math.min(player.x, this.app.worldBounds.x + this.app.worldBounds.width - padding),
         );
         player.y = Math.max(
-            this.app.worldBounds.y,
-            Math.min(player.y, this.app.worldBounds.y + this.app.worldBounds.height),
+            this.app.worldBounds.y + padding,
+            Math.min(player.y, this.app.worldBounds.y + this.app.worldBounds.height - padding),
         );
     }
 

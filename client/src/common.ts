@@ -114,7 +114,8 @@ export class GameApp extends Application {
         let targetX = this.screen.width / 2 - this.cameraFollowTarget.x;
         let targetY = this.screen.height / 2 - this.cameraFollowTarget.y;
 
-        this.gameView.x = lerp(this.gameView.x, targetX, 0.1);
-        this.gameView.y = lerp(this.gameView.y, targetY, 0.1);
+        const lag = 0.04;
+        this.gameView.x = lerp(this.gameView.x, targetX, lag);
+        this.gameView.y = lerp(this.gameView.y, targetY, lag);
     }
 }
