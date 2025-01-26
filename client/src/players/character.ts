@@ -1,5 +1,5 @@
 import { Container, Sprite, Texture } from "pixi.js";
-import { Direction, Position } from "../types";
+import { Direction, PlayerState, Position } from "../types";
 import { getRotationFromDirection } from "../common";
 // import { healthUpdater } from "../ui"
 
@@ -21,6 +21,8 @@ export class Character extends Container {
     targetY = 0;
     shooting = false;
     id: string;
+    username: string;
+    health: number;
 
     private interpolationDelay = 100; // ms
     private lastServerUpdate: number = Date.now();
@@ -28,15 +30,13 @@ export class Character extends Container {
     private targetPosition = { x: 0, y: 0 };
     private isInterpolating = false;
 
-    constructor(
-        id: string,
-        assets: Record<string, Texture>,
-        x: number,
-        y: number,
-        isLocal = false,
-    ) {
+    constructor(state: PlayerState, assets: Record<string, Texture>, isLocal = false) {
         super();
-        this.id = id;
+        this.id = state.id;
+        this.username = state.username;
+        this.facing = state.facing;
+        this.health = state.health;
+
         this.zIndex = 2;
 
         const crossBowTexture: Texture = assets.crossBowRed;
@@ -53,8 +53,8 @@ export class Character extends Container {
         this.isLocal = isLocal;
 
         // Set initial position
-        this.x = x;
-        this.y = y;
+        this.x = state.position.x;
+        this.y = state.position.y;
 
         // Setup keyboard listeners
         this.setupKeyboardListeners();

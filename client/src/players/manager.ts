@@ -18,9 +18,9 @@ export class CharacterManager {
         this.collisionSystem = new CollisionSystem();
     }
 
-    createCharacter(playerId: string, x: number, y: number, isLocal = false) {
-        const character = new Character(playerId, this.assets, x, y, isLocal);
-        this.players.set(playerId, character);
+    createCharacter(player: PlayerState, isLocal = false) {
+        const character = new Character(player, this.assets, isLocal);
+        this.players.set(player.id, character);
         this.app.stage.addChild(character);
         this.collisionSystem.addCharacter(character);
     }

@@ -106,13 +106,9 @@ io.on("connection", (socket) => {
     });
 
     socket.on(GameEvents.START_GAME, ({ roomId }) => {
-        console.log("in start game");
-
-        const roomPlayers = rooms.get(roomId);
-
-        if (roomPlayers) {
-            console.log("emiting!");
-            io.to(roomId).emit(GameEvents.START_GAME, { state: roomPlayers });
+        const world = rooms.get(roomId);
+        if (world) {
+            io.to(roomId).emit(GameEvents.START_GAME, { state: Array.from(world.values()) });
         }
     });
 

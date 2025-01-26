@@ -160,7 +160,6 @@ export function showPlayerPanel(
     if (isSpectator) {
         startBtn.style.display = "block";
         startBtn.addEventListener("click", () => {
-            console.log("starting game...");
             client.sendGameData(GameEvents.START_GAME, {});
         });
     }

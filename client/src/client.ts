@@ -10,7 +10,6 @@ export class GameClient {
     private roomId: string | null = null;
     private worldState: PlayerState[] = [];
     private roomSize: number = 0;
-    private isSpectator: boolean = false;
     private app: Application;
 
     public gameState = "connection";
@@ -72,7 +71,6 @@ export class GameClient {
                 this.worldState = state;
                 this.roomSize = roomSize;
                 this.gameState = "playerRoom";
-                this.isSpectator = false;
                 showPlayerPanel(this.worldState, roomSize, this);
             },
         );
@@ -83,16 +81,21 @@ export class GameClient {
                 this.worldState = state;
                 this.roomSize = roomSize;
                 this.gameState = "playerRoom";
-                this.isSpectator = true;
                 showPlayerPanel(this.worldState, roomSize, this, true);
             },
         );
 
-        this.socket.on(GameEvents.START_GAME, () => {
-            console.log("get start_game");
+        this.socket.on(GameEvents.START_GAME, ({ state }: { state: PlayerState[] }) => {
             showApp();
             this.gameState = "playing";
+            this.worldState = state;
             document.getElementById("pixi-container")!.appendChild(this.app.canvas);
+
+            console.log("state", state);
+
+            state.forEach((player: PlayerState) => {
+                this.characterManager.createCharacter(player);
+            });
         });
 
         this.socket.on(GameEvents.ROOM_DNE, () => {
