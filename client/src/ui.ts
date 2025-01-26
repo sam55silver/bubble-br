@@ -48,6 +48,8 @@ export function showConnectingMsg() {
     const tooFull = document.getElementById("too-full") as HTMLElement;
     const dne = document.getElementById("dne") as HTMLElement;
     const playerPanel = document.getElementById("player-panel") as HTMLElement;
+    const app = document.getElementById("app") as HTMLElement;
+    const mainMenu = document.getElementById("main-menu-container") as HTMLElement;
 
     errorMsg.style.display = "none";
     connectionMsg.style.display = "flex";
@@ -55,6 +57,8 @@ export function showConnectingMsg() {
     tooFull.style.display = "none";
     dne.style.display = "none";
     playerPanel.style.display = "none";
+    app.style.display = "none";
+    mainMenu.style.display = "flex";
 }
 
 export function showErrorMsg() {
@@ -64,6 +68,8 @@ export function showErrorMsg() {
     const tooFull = document.getElementById("too-full") as HTMLElement;
     const dne = document.getElementById("dne") as HTMLElement;
     const playerPanel = document.getElementById("player-panel") as HTMLElement;
+    const app = document.getElementById("app") as HTMLElement;
+    const mainMenu = document.getElementById("main-menu-container") as HTMLElement;
 
     errorMsg.style.display = "flex";
     connectionMsg.style.display = "none";
@@ -71,6 +77,8 @@ export function showErrorMsg() {
     tooFull.style.display = "none";
     dne.style.display = "none";
     playerPanel.style.display = "none";
+    app.style.display = "none";
+    mainMenu.style.display = "flex";
 }
 
 export function showConnectionPanel() {
@@ -80,6 +88,8 @@ export function showConnectionPanel() {
     const tooFull = document.getElementById("too-full") as HTMLElement;
     const dne = document.getElementById("dne") as HTMLElement;
     const playerPanel = document.getElementById("player-panel") as HTMLElement;
+    const app = document.getElementById("app") as HTMLElement;
+    const mainMenu = document.getElementById("main-menu-container") as HTMLElement;
 
     errorMsg.style.display = "none";
     connectionMsg.style.display = "none";
@@ -87,6 +97,8 @@ export function showConnectionPanel() {
     tooFull.style.display = "none";
     dne.style.display = "none";
     playerPanel.style.display = "none";
+    app.style.display = "none";
+    mainMenu.style.display = "flex";
 }
 
 export function showTooFull() {
@@ -96,6 +108,8 @@ export function showTooFull() {
     const tooFull = document.getElementById("too-full") as HTMLElement;
     const dne = document.getElementById("dne") as HTMLElement;
     const playerPanel = document.getElementById("player-panel") as HTMLElement;
+    const app = document.getElementById("app") as HTMLElement;
+    const mainMenu = document.getElementById("main-menu-container") as HTMLElement;
 
     errorMsg.style.display = "none";
     connectionMsg.style.display = "none";
@@ -103,6 +117,8 @@ export function showTooFull() {
     tooFull.style.display = "flex";
     dne.style.display = "none";
     playerPanel.style.display = "none";
+    app.style.display = "none";
+    mainMenu.style.display = "flex";
 }
 
 export function showDNE() {
@@ -112,6 +128,8 @@ export function showDNE() {
     const tooFull = document.getElementById("too-full") as HTMLElement;
     const dne = document.getElementById("dne") as HTMLElement;
     const playerPanel = document.getElementById("player-panel") as HTMLElement;
+    const app = document.getElementById("app") as HTMLElement;
+    const mainMenu = document.getElementById("main-menu-container") as HTMLElement;
 
     errorMsg.style.display = "none";
     connectionMsg.style.display = "none";
@@ -119,6 +137,8 @@ export function showDNE() {
     tooFull.style.display = "none";
     dne.style.display = "flex";
     playerPanel.style.display = "none";
+    app.style.display = "none";
+    mainMenu.style.display = "flex";
 }
 
 export function showPlayerPanel(
@@ -133,13 +153,31 @@ export function showPlayerPanel(
     const tooFull = document.getElementById("too-full") as HTMLElement;
     const dne = document.getElementById("dne") as HTMLElement;
     const playerPanel = document.getElementById("player-panel") as HTMLElement;
+    const app = document.getElementById("app") as HTMLElement;
+    const mainMenu = document.getElementById("main-menu-container") as HTMLElement;
 
     const startBtn = document.getElementById("start-button") as HTMLElement;
     if (isSpectator) {
         startBtn.style.display = "block";
-        client.sendGameData(GameEvents.START_GAME, {});
+        startBtn.addEventListener("click", () => {
+            console.log("starting game...");
+            client.sendGameData(GameEvents.START_GAME, {});
+        });
     }
 
+    updatePlayerPanel(worldState, roomSize);
+
+    errorMsg.style.display = "none";
+    connectionMsg.style.display = "none";
+    connectionPanel.style.display = "none";
+    tooFull.style.display = "none";
+    dne.style.display = "none";
+    playerPanel.style.display = "flex";
+    app.style.display = "none";
+    mainMenu.style.display = "flex";
+}
+
+export function updatePlayerPanel(worldState: PlayerState[], roomSize: number) {
     const players = document.getElementById("players") as HTMLElement;
     players.innerHTML = "";
     const playerSize = document.getElementById("player-size") as HTMLElement;
@@ -150,12 +188,25 @@ export function showPlayerPanel(
         p.textContent = player.username;
         players.appendChild(p);
     });
+}
+
+export function showApp() {
+    const errorMsg = document.getElementById("error") as HTMLElement;
+    const connectionMsg = document.getElementById("connecting") as HTMLElement;
+    const connectionPanel = document.getElementById("connection-panel") as HTMLElement;
+    const tooFull = document.getElementById("too-full") as HTMLElement;
+    const dne = document.getElementById("dne") as HTMLElement;
+    const playerPanel = document.getElementById("player-panel") as HTMLElement;
+    const app = document.getElementById("app") as HTMLElement;
+    const mainMenu = document.getElementById("main-menu-container") as HTMLElement;
 
     errorMsg.style.display = "none";
     connectionMsg.style.display = "none";
     connectionPanel.style.display = "none";
     tooFull.style.display = "none";
     dne.style.display = "none";
-    playerPanel.style.display = "flex";
+    playerPanel.style.display = "none";
+    app.style.display = "flex";
+    mainMenu.style.display = "none";
 }
 

@@ -28,6 +28,7 @@ const GameEvents = {
     ROOM_DNE: "room_dne",
     ROOM_FULL: "room_full",
     JOIN_SPECTATOR: "join_spectator",
+    START_GAME: "start_game",
 };
 
 const io = new Server(http, corsSettings);
@@ -101,6 +102,17 @@ io.on("connection", (socket) => {
 
             // Update the player state in the room
             roomPlayers.set(socket.id, updatedState);
+        }
+    });
+
+    socket.on(GameEvents.START_GAME, ({ roomId }) => {
+        console.log("in start game");
+
+        const roomPlayers = rooms.get(roomId);
+
+        if (roomPlayers) {
+            console.log("emiting!");
+            io.to(roomId).emit(GameEvents.START_GAME, { state: roomPlayers });
         }
     });
 

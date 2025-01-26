@@ -13,7 +13,7 @@ async function main() {
     try {
         const [app, assets] = await createScene();
         const characterManger = new CharacterManager(app, assets);
-        client = new GameClient(characterManger);
+        client = new GameClient(app, characterManger);
         app.ticker.add((time: any) => {
             (client as GameClient).update(time);
         });

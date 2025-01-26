@@ -1,7 +1,8 @@
 import { io, Socket } from "socket.io-client";
 import { CharacterManager } from "./players/manager.js";
 import { Direction, GameEvents, PlayerState, Position } from "./types.js";
-import { showDNE, showPlayerPanel, showTooFull } from "./ui.js";
+import { showApp, showDNE, showPlayerPanel, showTooFull, updatePlayerPanel } from "./ui.js";
+import { Application } from "pixi.js";
 
 export class GameClient {
     private socket: Socket;
@@ -10,11 +11,13 @@ export class GameClient {
     private worldState: PlayerState[] = [];
     private roomSize: number = 0;
     private isSpectator: boolean = false;
+    private app: Application;
 
     public gameState = "connection";
 
-    constructor(characterManager: CharacterManager) {
+    constructor(app: Application, characterManager: CharacterManager) {
         this.characterManager = characterManager;
+        this.app = app;
         const url = import.meta.env.PROD ? window.location.href : "http://localhost:5550";
         this.socket = io(url);
         this.setupSocketListeners();
@@ -85,6 +88,13 @@ export class GameClient {
             },
         );
 
+        this.socket.on(GameEvents.START_GAME, () => {
+            console.log("get start_game");
+            showApp();
+            this.gameState = "playing";
+            document.getElementById("pixi-container")!.appendChild(this.app.canvas);
+        });
+
         this.socket.on(GameEvents.ROOM_DNE, () => {
             showDNE();
         });
@@ -116,7 +126,7 @@ export class GameClient {
 
     public update(time: any): void {
         if (this.gameState == "playerRoom") {
-            showPlayerPanel(this.worldState, this.roomSize, this, this.isSpectator);
+            updatePlayerPanel(this.worldState, this.roomSize);
             return;
         } else if (this.gameState == "playing") {
             const localPlayer: { facing: Direction; position: Position } | null =
