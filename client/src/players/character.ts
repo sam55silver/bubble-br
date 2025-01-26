@@ -1,12 +1,19 @@
 import { Sprite, Texture, Text, Container, Graphics } from "pixi.js";
 import { BoltState, Direction, PlayerState, Position } from "../types";
-import { GameApp, getRotationFromDirection, RemoteContainer } from "../common";
+import {
+    BUBBLE_DAMAGE,
+    GameApp,
+    getRotationFromDirection,
+    PLAYER_MAX_HEALTH,
+    PLAYER_SPEED,
+    RemoteContainer,
+} from "../common";
 import { Bolt } from "./bolt";
 import { CollisionSystem } from "../collision/collision";
 import { AudioSystem } from "../audio/audio";
 
 export class Character extends RemoteContainer {
-    speed: number = 5;
+    speed: number = PLAYER_SPEED;
     direction = {
         up: false,
         down: false,
@@ -26,7 +33,7 @@ export class Character extends RemoteContainer {
     collisionSystem: CollisionSystem;
 
     health: number;
-    maxHealth = 100;
+    maxHealth = PLAYER_MAX_HEALTH;
     healthBar: Graphics;
     healthWidth: number;
     healthHeight: number;
@@ -167,7 +174,7 @@ export class Character extends RemoteContainer {
                 this.shooting = false;
             }
             if (this.app.bubble?.isPointOutside(this.x, this.y)) {
-                this.health -= 0.05;
+                this.health -= BUBBLE_DAMAGE;
             }
         } else {
             this.interpolate(Date.now());

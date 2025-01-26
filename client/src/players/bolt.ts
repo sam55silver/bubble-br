@@ -1,9 +1,9 @@
 import { Sprite, Texture } from "pixi.js";
 import { BoltState, Direction, Position } from "../types";
-import { getRotationFromDirection, RemoteContainer } from "../common";
+import { BOLT_SPEED, getRotationFromDirection, RemoteContainer } from "../common";
 
 export class Bolt extends RemoteContainer {
-    speed: number = 20;
+    speed: number = BOLT_SPEED;
     facing: Direction;
     id: string;
     playerId: string;

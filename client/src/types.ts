@@ -41,7 +41,7 @@ export interface BoltState {
     id: string;
     position: Position;
     facing: Direction;
-    isAlive: boolean;
+    alive: boolean;
 }
 
 export interface PlayerState {
@@ -75,4 +75,5 @@ export const GameEvents = {
     START_GAME: "start_game",
     PLAYER_DAMAGE: "player_damage",
     PLAYER_DEAD: "player_dead",
+    BUBBLE_RADIUS: "bubble_radius",
 };

@@ -74,19 +74,24 @@ export class GameClient {
             },
         );
 
-        this.socket.on(GameEvents.START_GAME, ({ state }: { state: PlayerState[] }) => {
-            showApp();
-            this.gameState = "playing";
-            this.worldState = state;
-            document.getElementById("pixi-container")!.appendChild(this.app.canvas);
-            this.localPlayerId = this.socket.id || null;
-            this.characterManager.localPlayerId = this.localPlayerId;
-            this.characterManager.collisionSystem.localPlayerId = this.localPlayerId;
+        this.socket.on(
+            GameEvents.START_GAME,
+            ({ state, radius }: { state: PlayerState[]; radius: number }) => {
+                showApp();
+                this.app.bubble?.setRadius(radius);
+                this.gameState = "playing";
+                this.worldState = state;
+                document.getElementById("pixi-container")!.appendChild(this.app.canvas);
 
-            state.forEach((player: PlayerState) => {
-                this.characterManager.createCharacter(player);
-            });
-        });
+                this.localPlayerId = this.socket.id || null;
+                this.characterManager.localPlayerId = this.localPlayerId;
+                this.characterManager.collisionSystem.localPlayerId = this.localPlayerId;
+
+                state.forEach((player: PlayerState) => {
+                    this.characterManager.createCharacter(player);
+                });
+            },
+        );
 
         this.socket.on(GameEvents.ROOM_DNE, () => {
             showDNE();
@@ -101,6 +106,11 @@ export class GameClient {
             if (this.localPlayerId == id) {
                 showDeath();
             }
+        });
+
+        this.socket.on(GameEvents.BUBBLE_RADIUS, ({ radius }: { radius: number }) => {
+            console.log("shrinking", radius);
+            this.app.bubble?.setRadius(radius);
         });
     }
 

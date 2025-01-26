@@ -14,6 +14,13 @@ const TICK_RATE = 60;
 const TICK_INTERVAL = 1000 / TICK_RATE;
 
 const PLAYER_LIMIT = 12;
+const PLAYER_MAX_HEALTH = 100;
+
+const BUBBLE_SHRINK_SPEED = 10;
+const BUBBLE_INTERVAL = 50;
+const BUBBLE_RADIUS = 1800;
+
+const MAX_TICK = 100000;
 
 const corsSettings = {
     cors: {
@@ -33,6 +40,7 @@ const GameEvents = {
     START_GAME: "start_game",
     PLAYER_DAMAGE: "player_damage",
     PLAYER_DEAD: "player_dead",
+    BUBBLE_RADIUS: "bubble_radius",
 };
 
 const io = new Server(http, corsSettings);
@@ -40,6 +48,9 @@ const io = new Server(http, corsSettings);
 // Map of rooms, where each room contains a Map of player states
 // rooms: Map<roomId, Map<playerId, playerState>>
 const rooms = new Map();
+const bubbles = new Map();
+
+let tickCount = 0;
 
 function generateRandomPosition() {
     return {
@@ -78,7 +89,7 @@ io.on("connection", (socket) => {
             username,
             position: generateRandomPosition(),
             facing: "south",
-            health: 100,
+            health: PLAYER_MAX_HEALTH,
             bolts: [],
         };
 
@@ -113,7 +124,11 @@ io.on("connection", (socket) => {
     socket.on(GameEvents.START_GAME, ({ roomId }) => {
         const world = rooms.get(roomId);
         if (world) {
-            io.to(roomId).emit(GameEvents.START_GAME, { state: Array.from(world.values()) });
+            bubbles.set(roomId, BUBBLE_RADIUS);
+            io.to(roomId).emit(GameEvents.START_GAME, {
+                state: Array.from(world.values()),
+                radius: BUBBLE_RADIUS,
+            });
         }
     });
 
@@ -146,6 +161,8 @@ io.on("connection", (socket) => {
 });
 
 function serverTick() {
+    tickCount++;
+
     rooms.forEach((players, roomId) => {
         if (players.size > 0) {
             // Convert players Map to array for world state
@@ -158,9 +175,21 @@ function serverTick() {
                 }
             });
 
+            if (tickCount % BUBBLE_INTERVAL === 0) {
+                const radius = (bubbles.get(roomId) || BUBBLE_RADIUS) - BUBBLE_SHRINK_SPEED;
+                bubbles.set(roomId, radius);
+                io.to(roomId).emit(GameEvents.BUBBLE_RADIUS, {
+                    radius,
+                });
+            }
+
             io.to(roomId).emit(GameEvents.WORLD_STATE, { state: worldState });
         }
     });
+
+    if (tickCount > MAX_TICK) {
+        tickCount = 0;
+    }
 }
 
 const tickInterval = setInterval(serverTick, TICK_INTERVAL);
