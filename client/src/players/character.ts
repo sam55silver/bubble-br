@@ -3,6 +3,7 @@ import { BoltState, Direction, PlayerState, Position } from "../types";
 import { GameApp, getRotationFromDirection, RemoteContainer } from "../common";
 import { Bolt } from "./bolt";
 import { CollisionSystem } from "../collision/collision";
+import { AudioSystem } from "../audio/audio";
 
 export class Character extends RemoteContainer {
     speed: number = 5;
@@ -142,6 +143,9 @@ export class Character extends RemoteContainer {
         this.app.gameLayer.addChild(bolt);
         this.bolts.set(id, bolt);
         this.collisionSystem.addProjectile(bolt);
+        if (this.id === this.collisionSystem.localPlayerId) {
+            AudioSystem.getInstance().playSound("bolt");
+        }
     }
 
     update(time: any, isLocal: boolean = false) {
@@ -283,7 +287,6 @@ export class Character extends RemoteContainer {
 
     toPlayerState(): PlayerState {
         let bolts: BoltState[] = [];
-        console.log(this.bolts);
         this.bolts.forEach((bolt: Bolt) => {
             bolts.push(bolt.toBoltState());
         });

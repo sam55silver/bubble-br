@@ -3,6 +3,7 @@ import { CharacterManager } from "./players/manager.js";
 import { GameEvents, PlayerState } from "./types.js";
 import { showApp, showDNE, showPlayerPanel, showTooFull, updatePlayerPanel } from "./ui.js";
 import { GameApp } from "./common.js";
+import { AudioSystem } from "./audio/audio.js";
 
 export class GameClient {
     private socket: Socket;
@@ -77,7 +78,6 @@ export class GameClient {
             this.gameState = "playing";
             this.worldState = state;
             document.getElementById("pixi-container")!.appendChild(this.app.canvas);
-
             this.localPlayerId = this.socket.id || null;
             this.characterManager.localPlayerId = this.localPlayerId;
             this.characterManager.collisionSystem.localPlayerId = this.localPlayerId;
