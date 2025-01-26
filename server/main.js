@@ -41,6 +41,7 @@ const GameEvents = {
     PLAYER_DAMAGE: "player_damage",
     PLAYER_DEAD: "player_dead",
     BUBBLE_RADIUS: "bubble_radius",
+    PLAYER_WIN: "player_win",
 };
 
 const io = new Server(http, corsSettings);
@@ -49,6 +50,7 @@ const io = new Server(http, corsSettings);
 // rooms: Map<roomId, Map<playerId, playerState>>
 const rooms = new Map();
 const bubbles = new Map();
+const roomsState = new Map();
 
 let tickCount = 0;
 
@@ -75,6 +77,7 @@ io.on("connection", (socket) => {
             }
 
             rooms.set(roomId, new Map());
+            roomsState.set(roomId, "title");
         }
 
         const world = rooms.get(roomId);
@@ -124,6 +127,7 @@ io.on("connection", (socket) => {
     socket.on(GameEvents.START_GAME, ({ roomId }) => {
         const world = rooms.get(roomId);
         if (world) {
+            roomsState.set(roomId, "playing");
             bubbles.set(roomId, BUBBLE_RADIUS);
             io.to(roomId).emit(GameEvents.START_GAME, {
                 state: Array.from(world.values()),
@@ -164,12 +168,22 @@ function serverTick() {
     tickCount++;
 
     rooms.forEach((players, roomId) => {
+        if (players.size == 1 && roomsState.get(roomId) == "playing") {
+            io.to(roomId).emit(GameEvents.PLAYER_WIN);
+            io.socketsLeave(roomId);
+            rooms.delete(roomId);
+            bubbles.delete(roomId);
+            roomsState.delete(roomId);
+            return;
+        }
+
         if (players.size > 0) {
             // Convert players Map to array for world state
             const worldState = Array.from(players.values());
 
             worldState.forEach((state) => {
                 if (state.health <= 0) {
+                    players.delete(state.id);
                     io.to(roomId).emit(GameEvents.PLAYER_DEAD, { id: state.id });
                     io.in(state.id).socketsLeave(roomId);
                 }

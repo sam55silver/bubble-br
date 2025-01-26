@@ -76,4 +76,5 @@ export const GameEvents = {
     PLAYER_DAMAGE: "player_damage",
     PLAYER_DEAD: "player_dead",
     BUBBLE_RADIUS: "bubble_radius",
+    PLAYER_WIN: "player_win",
 };

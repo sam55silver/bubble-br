@@ -109,8 +109,11 @@ export class GameClient {
         });
 
         this.socket.on(GameEvents.BUBBLE_RADIUS, ({ radius }: { radius: number }) => {
-            console.log("shrinking", radius);
             this.app.bubble?.setRadius(radius);
+        });
+
+        this.socket.on(GameEvents.PLAYER_WIN, () => {
+            console.log("win");
         });
     }
 
