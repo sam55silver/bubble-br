@@ -71,9 +71,15 @@ body {
             }
         }
     
+        #credits-button {
+            font-size: 1.5rem;
+            padding: 2px;
+            margin-top: 10px;
+        }
 
         .msg {
             padding-top: 10px;
+            padding-bottom: 20px;
             text-align: center;
             text-shadow: 2px 2px 4px #1a1a1a;
             width: 100%;
@@ -207,7 +213,7 @@ body {
     height: 100vh;
     background-color: #1a1a1a;
     /* display:none to hide, :flex to show */
-    display: flex;
+    display: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -226,6 +232,54 @@ body {
         #win {
             font-size: 3rem;
             text-shadow: 2px 2px 4px #1a1a1a;
+        }
+    
+        #main-menu-button {
+            padding: 5px;
+            font-family: "Xolonium";
+            font-size: 2rem;
+            border-radius: 5px;
+            color: #1a1a1a;
+            box-shadow: 2px 2px 4px #1a1a1a;
+            
+            &:hover {
+                background-color: #ffffffcc;
+            }
+        }
+    }
+}
+
+
+/* ------------------------------------------------------------- credits styles */
+
+#credits-container {
+    width: 100%;
+    height: 100vh;
+    background-color: #1a1a1a;
+    /* display:none to hide, :flex to show */
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    #credits-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        outline: 4px solid #660000;
+        border-radius: 10px;
+        background-color: #ba3030;
+        padding: 40px;
+
+        #credits {
+            font-size: 3rem;
+            text-shadow: 2px 2px 4px #1a1a1a;
+
+            span {
+                font-size: 5rem;
+            }
         }
     
         #main-menu-button {
