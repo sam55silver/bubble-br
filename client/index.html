@@ -1,95 +1,107 @@
 <!doctype html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/png" href="/favicon.png" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="/style.css" />
+        <title>Bubble Battle Royal</title>
+    </head>
 
-<head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="/style.css">
-    <title>Bubble Battle Royal</title>
-</head>
-
-<body>
-    <div id="main-menu-container" class="visible panel-container">
-        <div id="connection-panel" class="panel hidden">
-            <label for="server-input" id="server-input-label">Bubble Battle Royale</label><br>
-            <input type="text" id="username-input" name="username" size="20" placeholder="Enter a username..." maxlength="20"><br>
-            <input type="text" id="server-input" name="server" size="20" placeholder="Enter the server code..." maxlength="20"><br>
-            <button id="connect-button" type="button">Connect</button>
-            <button id="credits-button" type="button">Credits</button>
-            <div class="msg">Controls: WASD for movement, spacebar to shoot</div>
-        </div>
-        <div id="player-panel" class="panel hidden">
-            <label for="server-input" id="server-input-label">Bubble Battle Royale</label><br>
-            <div id="players"></div>
+    <body>
+        <div id="main-menu-container" class="visible panel-container">
+            <div id="connection-panel" class="panel hidden">
+                <label for="server-input" id="server-input-label">Bubble Battle Royale</label><br />
+                <input
+                    type="text"
+                    id="username-input"
+                    name="username"
+                    size="20"
+                    placeholder="Enter a username..."
+                    maxlength="20"
+                /><br />
+                <input
+                    type="text"
+                    id="server-input"
+                    name="server"
+                    size="20"
+                    placeholder="Enter the server code..."
+                    maxlength="20"
+                /><br />
+                <button id="connect-button" type="button">Connect</button>
+                <button id="credits-button" type="button">Credits</button>
+                <div class="msg">Controls: WASD for movement, spacebar to shoot</div>
+            </div>
+            <div id="player-panel" class="panel hidden">
+                <label for="server-input" id="server-input-label">Bubble Battle Royale</label><br />
+                <div id="players"></div>
                 <div class="msg">Player Count: <span id="player-size"></span></div>
                 <div class="msg">Waiting for game to start...</div>
-            <div class="msg">Controls: WASD for movement, spacebar to shoot</div>
-            <button id="start-button" type="button" class="hidden">Start</button>
+                <div class="msg">Controls: WASD for movement, spacebar to shoot</div>
+                <button id="start-button" type="button" class="hidden">Start</button>
+            </div>
+            <div id="connecting" class="message visible">Connecting, please stand by...</div>
+            <div id="error" class="message hidden">
+                An error has occured! Please contact creators...
+            </div>
+            <div id="too-full" class="message hidden">Room is too full! Please try another...</div>
+            <div id="dne" class="message hidden">Room does not exist! Please try another...</div>
         </div>
-        <div id="connecting" class="message visible">
-            Connecting, please stand by...
-        </div>
-        <div id="error" class="message hidden">
-            An error has occured! Please contact creators...
-        </div>
-        <div id="too-full" class="message hidden">
-            Room is too full! Please try another...
-        </div>
-        <div id="dne" class="message hidden">
-            Room does not exist! Please try another...
-        </div>
-    </div>
 
-    <div id="app">
-        <div id="pixi-container"></div>
-        <!-- <div id="countdown-container">
+        <div id="app">
+            <div id="pixi-container"></div>
+            <!-- <div id="countdown-container">
             <div id="countdown">3</div>
         </div> -->
-        <!-- <div id="hitpoints-container"> -->
-        <!--     <div id="hitpoints">100</div> -->
-        <!-- </div> -->
-    </div>
+            <!-- <div id="hitpoints-container"> -->
+            <!--     <div id="hitpoints">100</div> -->
+            <!-- </div> -->
+        </div>
 
-    <div id="death-container">
-        <div id="death-panel">
-            <div id="death">You died.<br></div>
-            <div class="message">
-                Refresh browser to play again...
+        <div id="death-container">
+            <div id="death-panel">
+                <div id="death">You died.<br /></div>
+                <div class="message">Refresh browser to play again...</div>
             </div>
         </div>
-    </div>
 
-    <div id="win-container">
-        <div id="win-panel">
-            <div id="win">You are victorious!<br></div>
-            <div class="message">
-                Refresh browser to play again...
+        <div id="win-container">
+            <div id="win-panel">
+                <div id="win">You are victorious!<br /></div>
+                <div class="message">Refresh browser to play again...</div>
             </div>
         </div>
-    </div>
 
-    <div id="credits-container">
-        <div id="credits-panel">
-            <div id="credits">
-                    <p><bold class="underline">Game By</bold><br>
-                        Peter Betts<br>
-                        Matin Ghodousi Hasanpour<br>
+        <div id="credits-container">
+            <div id="credits-panel">
+                <div id="credits">
+                    <p>
+                        <bold class="underline">Game By</bold><br />
+                        Peter Betts<br />
+                        Matin Ghodousi Hasanpour<br />
                         Sam Silver
                     </p>
-                    <p><bold class="underline">Music (from pixabay.com)</bold><br>
-                    Medieval Adventure by Emmeraan</p>
-                    <p><bold class="underline">Sound (from freesound.org)</bold><br>
-                        wilhelm_scream.wav by Syna_Max<br>
-                    oof.mp3 by CrimsonImaging<br>
-                    Crossbow Shot by LeMudCrab<br>
-                    Nerf Roughcut Trigger by ImAFoley</p>
-            </div>
+                    <p>
+                        <bold class="underline">Music (from pixabay.com)</bold><br />
+                        Medieval Adventure by Emmeraan
+                    </p>
+                    <p>
+                        <bold class="underline">Sound (from freesound.org)</bold><br />
+                        wilhelm_scream.wav by Syna_Max<br />
+                        oof.mp3 by CrimsonImaging<br />
+                        Crossbow Shot by LeMudCrab<br />
+                        Nerf Roughcut Trigger by ImAFoley<br />
+                        Success Fanfare Trumpets.mp3 by FunWithSound
+                    </p>
+                    <p>
+                        <bold class="underline">Assets</bold><br />
+                        Mapmaking Pack from forgotten-adventures.net
+                    </p>
+                </div>
                 <button type="button" id="menu-button">Menu</button>
+            </div>
         </div>
-    </div>
 
-    <script type="module" src="/src/main.ts"></script>
-</body>
-
+        <script type="module" src="/src/main.ts"></script>
+    </body>
 </html>
