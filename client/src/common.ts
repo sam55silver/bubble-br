@@ -3,6 +3,8 @@ import { Direction, Position } from "./types";
 import { Character } from "./players/character";
 import { Bubble } from "./scene/bubble";
 
+export const BOLT_DAMAGE = 10;
+
 export function getRotationFromDirection(direction: Direction): number {
     switch (direction) {
         case Direction.NORTH:

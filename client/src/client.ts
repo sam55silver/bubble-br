@@ -2,8 +2,9 @@ import { io, Socket } from "socket.io-client";
 import { CharacterManager } from "./players/manager.js";
 import { GameEvents, PlayerState } from "./types.js";
 import { showApp, showDNE, showPlayerPanel, showTooFull, updatePlayerPanel } from "./ui.js";
-import { GameApp } from "./common.js";
 import { AudioSystem } from "./audio/audio.js";
+import { BOLT_DAMAGE, GameApp } from "./common.js";
+import { Character } from "./players/character.js";
 
 export class GameClient {
     private socket: Socket;
@@ -94,6 +95,10 @@ export class GameClient {
         this.socket.on(GameEvents.ROOM_FULL, () => {
             showTooFull();
         });
+
+        this.socket.on(GameEvents.PLAYER_DEAD, ({ id }: { id: string }) => {
+            this.characterManager.removeCharacter(id);
+        });
     }
 
     public joinRoom(roomId: string, username: string): void {
@@ -133,6 +138,11 @@ export class GameClient {
             if (localPlayer) {
                 this.sendGameData(GameEvents.PLAYER_STATE, localPlayer.toPlayerState());
             }
+
+            this.characterManager.charsHit.forEach((player: Character) => {
+                this.sendDamage(player.id, BOLT_DAMAGE);
+            });
+            this.characterManager.charsHit = [];
         }
     }
 

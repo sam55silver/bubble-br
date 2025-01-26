@@ -1,6 +1,7 @@
 import { Container, Rectangle } from "pixi.js";
 import { Character } from "../players/character";
 import { Bolt } from "../players/bolt";
+import { BOLT_DAMAGE } from "../common";
 
 export class CollisionSystem {
     private characters: Map<string, Character>;
@@ -30,15 +31,12 @@ export class CollisionSystem {
     }
 
     removeProjectile(projectile: Bolt) {
-        const player = this.characters.get(projectile.playerId);
-        if (player) {
-            player.bolts.delete(projectile.id);
-        }
+        projectile.alive = false;
         this.projectiles.delete(projectile);
-        projectile.destroy();
+        projectile.boltSprite.destroy();
     }
 
-    update() {
+    update(): Character[] {
         this.projectiles = new Set(
             Array.from(this.projectiles).filter((projectile) => {
                 if (projectile instanceof Bolt && !projectile.isAlive()) {
@@ -49,10 +47,14 @@ export class CollisionSystem {
         );
 
         // Check character-projectile collisions
+        let charsHit = [];
         for (const character of this.characters.values()) {
             for (const projectile of this.projectiles) {
                 if (this.checkCharacterProjectileCollision(character, projectile)) {
-                    this.handleCharacterProjectileCollision(character, projectile);
+                    const hit = this.handleCharacterProjectileCollision(character, projectile);
+                    if (hit != null) {
+                        charsHit.push(hit);
+                    }
                 }
             }
         }
@@ -68,6 +70,8 @@ export class CollisionSystem {
                 }
             }
         }
+
+        return charsHit;
     }
 
     private getCharacterBounds(character: Character): Rectangle {
@@ -146,13 +150,16 @@ export class CollisionSystem {
         }
     }
 
-    private handleCharacterProjectileCollision(character: Character, projectile: Bolt): void {
+    private handleCharacterProjectileCollision(
+        character: Character,
+        projectile: Bolt,
+    ): Character | null {
         if (projectile instanceof Bolt && character.id === projectile.playerId) {
-            return;
+            return null;
         }
         console.log(`Collision detected between Character and Projectile`);
         character.tint = 0xff0000;
-        character.takeDamage(10);
+        character.takeDamage(BOLT_DAMAGE);
 
         if (projectile instanceof Bolt) {
             this.removeProjectile(projectile);
@@ -161,5 +168,6 @@ export class CollisionSystem {
         setTimeout(() => {
             character.tint = 0xffffff;
         }, 500);
+        return character;
     }
 }

@@ -31,6 +31,8 @@ const GameEvents = {
     ROOM_FULL: "room_full",
     JOIN_SPECTATOR: "join_spectator",
     START_GAME: "start_game",
+    PLAYER_DAMAGE: "player_damage",
+    PLAYER_DEAD: "player_dead",
 };
 
 const io = new Server(http, corsSettings);
@@ -137,7 +139,11 @@ io.on("connection", (socket) => {
 
         if (roomPlayers && roomPlayers.has(targetId)) {
             const targetPlayer = roomPlayers.get(targetId);
-            targetPlayer.health = Math.max(0, targetPlayer.health - amount);
+            const health = targetPlayer.health - amount;
+            if (health <= 0) {
+                io.to(roomId).emit(GameEvents.PLAYER_DEAD, { id: targetPlayer.id });
+            }
+            targetPlayer.health = Math.max(0, health);
         }
     });
 });

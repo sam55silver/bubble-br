@@ -41,6 +41,7 @@ export interface BoltState {
     id: string;
     position: Position;
     facing: Direction;
+    isAlive: boolean;
 }
 
 export interface PlayerState {
@@ -73,4 +74,5 @@ export const GameEvents = {
     JOIN_SPECTATOR: "join_spectator",
     START_GAME: "start_game",
     PLAYER_DAMAGE: "player_damage",
+    PLAYER_DEAD: "player_dead",
 };
