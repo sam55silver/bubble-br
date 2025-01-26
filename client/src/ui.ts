@@ -51,6 +51,7 @@ export function showConnectingMsg() {
     const app = document.getElementById("app") as HTMLElement;
     const mainMenu = document.getElementById("main-menu-container") as HTMLElement;
     const deathContainer = document.getElementById("death-container") as HTMLElement;
+    const winContainer = document.getElementById("win-container") as HTMLElement;
 
     errorMsg.style.display = "none";
     connectionMsg.style.display = "flex";
@@ -61,6 +62,7 @@ export function showConnectingMsg() {
     app.style.display = "none";
     mainMenu.style.display = "flex";
     deathContainer.style.display = "none";
+    winContainer.style.display = "none";
 }
 
 export function showErrorMsg() {
@@ -73,6 +75,7 @@ export function showErrorMsg() {
     const app = document.getElementById("app") as HTMLElement;
     const mainMenu = document.getElementById("main-menu-container") as HTMLElement;
     const deathContainer = document.getElementById("death-container") as HTMLElement;
+    const winContainer = document.getElementById("win-container") as HTMLElement;
 
     errorMsg.style.display = "flex";
     connectionMsg.style.display = "none";
@@ -83,6 +86,7 @@ export function showErrorMsg() {
     app.style.display = "none";
     mainMenu.style.display = "flex";
     deathContainer.style.display = "none";
+    winContainer.style.display = "none";
 }
 
 export function showConnectionPanel() {
@@ -95,6 +99,7 @@ export function showConnectionPanel() {
     const app = document.getElementById("app") as HTMLElement;
     const mainMenu = document.getElementById("main-menu-container") as HTMLElement;
     const deathContainer = document.getElementById("death-container") as HTMLElement;
+    const winContainer = document.getElementById("win-container") as HTMLElement;
 
     errorMsg.style.display = "none";
     connectionMsg.style.display = "none";
@@ -105,6 +110,7 @@ export function showConnectionPanel() {
     app.style.display = "none";
     mainMenu.style.display = "flex";
     deathContainer.style.display = "none";
+    winContainer.style.display = "none";
 }
 
 export function showTooFull() {
@@ -117,6 +123,7 @@ export function showTooFull() {
     const app = document.getElementById("app") as HTMLElement;
     const mainMenu = document.getElementById("main-menu-container") as HTMLElement;
     const deathContainer = document.getElementById("death-container") as HTMLElement;
+    const winContainer = document.getElementById("win-container") as HTMLElement;
 
     errorMsg.style.display = "none";
     connectionMsg.style.display = "none";
@@ -127,6 +134,7 @@ export function showTooFull() {
     app.style.display = "none";
     mainMenu.style.display = "flex";
     deathContainer.style.display = "none";
+    winContainer.style.display = "none";
 }
 
 export function showDNE() {
@@ -139,6 +147,7 @@ export function showDNE() {
     const app = document.getElementById("app") as HTMLElement;
     const mainMenu = document.getElementById("main-menu-container") as HTMLElement;
     const deathContainer = document.getElementById("death-container") as HTMLElement;
+    const winContainer = document.getElementById("win-container") as HTMLElement;
 
     errorMsg.style.display = "none";
     connectionMsg.style.display = "none";
@@ -149,6 +158,7 @@ export function showDNE() {
     app.style.display = "none";
     mainMenu.style.display = "flex";
     deathContainer.style.display = "none";
+    winContainer.style.display = "none";
 }
 
 export function showPlayerPanel(
@@ -166,6 +176,7 @@ export function showPlayerPanel(
     const app = document.getElementById("app") as HTMLElement;
     const mainMenu = document.getElementById("main-menu-container") as HTMLElement;
     const deathContainer = document.getElementById("death-container") as HTMLElement;
+    const winContainer = document.getElementById("win-container") as HTMLElement;
 
     const startBtn = document.getElementById("start-button") as HTMLElement;
     if (isSpectator) {
@@ -186,6 +197,7 @@ export function showPlayerPanel(
     app.style.display = "none";
     mainMenu.style.display = "flex";
     deathContainer.style.display = "none";
+    winContainer.style.display = "none";
 }
 
 export function updatePlayerPanel(worldState: PlayerState[], roomSize: number) {
@@ -211,6 +223,7 @@ export function showApp() {
     const app = document.getElementById("app") as HTMLElement;
     const mainMenu = document.getElementById("main-menu-container") as HTMLElement;
     const deathContainer = document.getElementById("death-container") as HTMLElement;
+    const winContainer = document.getElementById("win-container") as HTMLElement;
 
     errorMsg.style.display = "none";
     connectionMsg.style.display = "none";
@@ -221,6 +234,7 @@ export function showApp() {
     app.style.display = "flex";
     mainMenu.style.display = "none";
     deathContainer.style.display = "none";
+    winContainer.style.display = "none";
 }
 
 export function showDeath() {
@@ -233,6 +247,7 @@ export function showDeath() {
     const app = document.getElementById("app") as HTMLElement;
     const mainMenu = document.getElementById("main-menu-container") as HTMLElement;
     const deathContainer = document.getElementById("death-container") as HTMLElement;
+    const winContainer = document.getElementById("win-container") as HTMLElement;
 
     errorMsg.style.display = "none";
     connectionMsg.style.display = "none";
@@ -243,4 +258,29 @@ export function showDeath() {
     app.style.display = "none";
     mainMenu.style.display = "none";
     deathContainer.style.display = "flex";
+    winContainer.style.display = "none";
+}
+
+export function showWin() {
+    const errorMsg = document.getElementById("error") as HTMLElement;
+    const connectionMsg = document.getElementById("connecting") as HTMLElement;
+    const connectionPanel = document.getElementById("connection-panel") as HTMLElement;
+    const tooFull = document.getElementById("too-full") as HTMLElement;
+    const dne = document.getElementById("dne") as HTMLElement;
+    const playerPanel = document.getElementById("player-panel") as HTMLElement;
+    const app = document.getElementById("app") as HTMLElement;
+    const mainMenu = document.getElementById("main-menu-container") as HTMLElement;
+    const deathContainer = document.getElementById("death-container") as HTMLElement;
+    const winContainer = document.getElementById("win-container") as HTMLElement;
+
+    errorMsg.style.display = "none";
+    connectionMsg.style.display = "none";
+    connectionPanel.style.display = "none";
+    tooFull.style.display = "none";
+    dne.style.display = "none";
+    playerPanel.style.display = "none";
+    app.style.display = "none";
+    mainMenu.style.display = "none";
+    deathContainer.style.display = "none";
+    winContainer.style.display = "flex";
 }

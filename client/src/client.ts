@@ -113,7 +113,7 @@ export class GameClient {
         });
 
         this.socket.on(GameEvents.PLAYER_WIN, () => {
-            console.log("win");
+            showWin();
         });
     }
 
