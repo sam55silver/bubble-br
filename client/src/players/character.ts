@@ -189,19 +189,25 @@ export class Character extends Container {
     updateLocal(time: any) {
         this.setFacing();
 
-        // Update position based on direction
-        if (this.direction.up) {
-            this.y -= this.speed * time.deltaTime;
+        let dx = 0;
+        let dy = 0;
+
+        if (this.direction.up) dy -= 1;
+        if (this.direction.down) dy += 1;
+        if (this.direction.left) dx -= 1;
+        if (this.direction.right) dx += 1;
+
+        // Normalize the direction vector if moving diagonally
+        if (dx !== 0 && dy !== 0) {
+            // Length of diagonal vector is sqrt(2), so divide by sqrt(2) to normalize
+            const length = Math.sqrt(dx * dx + dy * dy);
+            dx /= length;
+            dy /= length;
         }
-        if (this.direction.down) {
-            this.y += this.speed * time.deltaTime;
-        }
-        if (this.direction.left) {
-            this.x -= this.speed * time.deltaTime;
-        }
-        if (this.direction.right) {
-            this.x += this.speed * time.deltaTime;
-        }
+
+        // Apply movement
+        this.x += dx * this.speed * time.deltaTime;
+        this.y += dy * this.speed * time.deltaTime;
     }
 }
 
