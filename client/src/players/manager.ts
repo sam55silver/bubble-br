@@ -57,7 +57,7 @@ export class CharacterManager {
             playerState.bolts.forEach((boltState: BoltState) => {
                 const bolt = player.bolts.get(boltState.id);
                 if (!bolt) {
-                    player.spawnBolt(player.id, boltState.id, boltState.position, boltState.facing);
+                    player.spawnBolt(player.id, boltState.position, boltState.facing);
                 } else {
                     bolt.updatePosition(boltState.position);
                 }

@@ -62,6 +62,14 @@ export const manifest = {
                 crossBowBoltAshen: "/assets/characters/Weapons/Crossbow_Bolt_Wood_Ashen_B_1x1.png",
             },
         },
+        {
+            name: "audioAssets",
+            assets: {
+                boltSound: "/assets/audio/male-death-sound-128357-copy.mp3",
+                hitSound: "/assets/audio/big-hit-sound-effect-241416.mp3",
+                deathSound: "/assets/audio/male-death-sound-128357.mp3",
+            },
+        },
         // Add more bundles here...
     ],
 };
