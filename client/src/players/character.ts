@@ -143,8 +143,9 @@ export class Character extends RemoteContainer {
         this.app.gameLayer.addChild(bolt);
         this.bolts.set(id, bolt);
         this.collisionSystem.addProjectile(bolt);
-        AudioSystem.getInstance().playSound('bolt');
-        console.log("Sounddd");
+        if (this.id === this.collisionSystem.localPlayerId) {
+            AudioSystem.getInstance().playSound("bolt");
+        }
     }
 
     update(time: any, isLocal: boolean = false) {

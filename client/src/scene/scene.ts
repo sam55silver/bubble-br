@@ -2,6 +2,7 @@ import { Assets, Container, Texture } from "pixi.js";
 import { manifest } from "./manifest";
 import { Tile } from "./tile";
 import { GameApp } from "../common";
+import { AudioSystem } from "../audio/audio";
 
 export async function createScene(): Promise<[GameApp, Record<string, Texture>]> {
     const assets = await loadSceneAssets(manifest);
@@ -41,6 +42,7 @@ export async function createScene(): Promise<[GameApp, Record<string, Texture>]>
     // };
 
     Object.values(layers).forEach((layer) => scene.addChild(layer));
+    AudioSystem.getInstance().playBackgroundMusic();
 
     return [app, assets];
 }
@@ -50,6 +52,8 @@ export async function createScene(): Promise<[GameApp, Record<string, Texture>]>
  */
 async function loadSceneAssets(manifest: any): Promise<Record<string, Texture>> {
     await Assets.init({ manifest });
+    const audioAssets = await Assets.loadBundle("audioAssets");
+    AudioSystem.getInstance().initialize(audioAssets);
     return Assets.loadBundle("sceneAssets");
 }
 

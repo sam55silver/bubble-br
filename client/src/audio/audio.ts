@@ -16,22 +16,19 @@ export class AudioSystem {
         return AudioSystem.instance;
     }
 
-    public initialize(audioAssets: Record<string, string>) {
+    public initialize(audioAssets: AudioSystem) {
         if (this.initialized) return;
         
         this.sounds.set('bolt', new Howl({
-            src: [audioAssets.boltSound],
-            volume: 0.5
+            src: ["/assets/audio/fire_reload.mp3"],
+            volume: 0.5,
         }));
 
-        this.sounds.set('hit', new Howl({
-            src: [audioAssets.hitSound],
-            volume: 0.3
-        }));
-
-        this.sounds.set('death', new Howl({
-            src: [audioAssets.deathSound],
-            volume: 0.7
+        this.sounds.set('background', new Howl({
+            src: ["/assets/audio/music.mp3"],
+            volume: 0.5,
+            loop: true,
+            preload: true,
         }));
 
         this.initialized = true;
@@ -48,6 +45,13 @@ export class AudioSystem {
         const sound = this.sounds.get(soundName);
         if (sound) {
             sound.stop();
+        }
+    }
+
+    public playBackgroundMusic() {
+        const sound = this.sounds.get('background');
+        if (sound) {
+            sound.play();
         }
     }
 }
