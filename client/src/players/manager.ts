@@ -1,16 +1,17 @@
 import { CollisionSystem } from "../collision/collision";
-import { Direction, PlayerState, Position } from "../types";
+import { BoltState, Direction, PlayerState, Position } from "../types";
 import { Bolt } from "./bolt";
 import { Character } from "./character";
 
-import { Application, Graphics, Rectangle, Sprite, Texture } from "pixi.js";
+import { Application, Texture } from "pixi.js";
 
 export class CharacterManager {
     private app: Application;
     private assets: Record<string, Texture>;
-    private players = new Map();
     private collisionSystem: CollisionSystem;
-    private bolts: { id: string; bolt: Bolt }[] = [];
+
+    public players: Map<string, Character> = new Map();
+    public localPlayerId: string | null = null;
 
     constructor(app: Application, assets: Record<string, Texture>) {
         this.app = app;
@@ -18,8 +19,8 @@ export class CharacterManager {
         this.collisionSystem = new CollisionSystem();
     }
 
-    createCharacter(player: PlayerState, isLocal = false) {
-        const character = new Character(player, this.assets, isLocal);
+    createCharacter(player: PlayerState) {
+        const character = new Character(this.app, player, this.assets);
         this.players.set(player.id, character);
         this.app.stage.addChild(character);
         this.collisionSystem.addCharacter(character);
@@ -39,14 +40,40 @@ export class CharacterManager {
     // Update character position
     updateRemoteStates(playerStates: PlayerState[]) {
         playerStates.forEach((playerState: PlayerState) => {
-            const player: Character | null = this.players.get(playerState.id);
-            if (!player || player.isLocal) {
+            const player = this.players.get(playerState.id);
+            if (!player || player.id == this.localPlayerId) {
                 return;
             }
             player.updatePosition(playerState.position);
             player.facing = playerState.facing;
             player.health = playerState.health;
+
+            let boltKeys: string[] = [];
+            playerState.bolts.forEach((boltState: BoltState) => {
+                const bolt = player.bolts.get(boltState.id);
+                if (!bolt) {
+                    player.spawnBolt(boltState.id, boltState.position, boltState.facing);
+                } else {
+                    bolt.updatePosition(boltState.position);
+                }
+                boltKeys.push(boltState.id);
+            });
+            const currBolts = Array.from(player.bolts.keys());
+            const diff = currBolts.filter((x: string) => !boltKeys.includes(x));
+
+            diff.forEach((boltId: string) => {
+                player.bolts.delete(boltId);
+            });
         });
+    }
+
+    clampToWindow(player: Character) {
+        // clamp to screen
+        const halfWidth = player.width / 2;
+        const halfHeight = player.height / 2;
+
+        player.x = Math.max(halfWidth, Math.min(player.x, this.app.screen.width - halfWidth));
+        player.y = Math.max(halfHeight, Math.min(player.y, this.app.screen.height - halfHeight));
     }
 
     spawnBolt(id: string, pos: Position, facing: Direction) {
@@ -67,47 +94,17 @@ export class CharacterManager {
         }
     }
 
-    update(time: any) {
-        let localPlayerPos = null;
-
+    update(time: any): void {
         this.players.forEach((player: Character) => {
-            const pos = player.update(time);
+            const isLocal = this.localPlayerId == player.id;
+            player.update(time, isLocal);
 
-            if (pos != null) {
-                // clamp
-                const halfWidth = player.width / 2;
-                const halfHeight = player.height / 2;
-
-                player.x = Math.max(
-                    halfWidth,
-                    Math.min(player.x, this.app.screen.width - halfWidth),
-                );
-                player.y = Math.max(
-                    halfHeight,
-                    Math.min(player.y, this.app.screen.height - halfHeight),
-                );
-
-                localPlayerPos = { x: player.x, y: player.y };
+            // Then local player
+            if (isLocal) {
+                this.clampToWindow(player);
             }
         });
 
         this.collisionSystem.update(time);
-
-        let localPlayer = null;
-        this.players.forEach((player: Character) => {
-            const state = player.update(time);
-            if (player.isLocal) {
-                localPlayer = state;
-                if (player.shooting) {
-                    this.spawnBolt(player.id, { x: player.x, y: player.y }, player.facing);
-                    player.shooting = false;
-                }
-            }
-        });
-        this.bolts.forEach(({ bolt }) => {
-            bolt.update(time);
-        });
-
-        return localPlayer;
     }
 }

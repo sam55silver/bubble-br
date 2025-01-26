@@ -1,6 +1,6 @@
 import { io, Socket } from "socket.io-client";
 import { CharacterManager } from "./players/manager.js";
-import { Direction, GameEvents, PlayerState, Position } from "./types.js";
+import { GameEvents, PlayerState } from "./types.js";
 import { showApp, showDNE, showPlayerPanel, showTooFull, updatePlayerPanel } from "./ui.js";
 import { Application } from "pixi.js";
 
@@ -13,6 +13,7 @@ export class GameClient {
     private app: Application;
 
     public gameState = "connection";
+    public localPlayerId: string | null = null;
 
     constructor(app: Application, characterManager: CharacterManager) {
         this.characterManager = characterManager;
@@ -52,8 +53,8 @@ export class GameClient {
         // });
 
         this.socket.on(GameEvents.WORLD_STATE, ({ state }: { state: PlayerState[] }) => {
-            //this.characterManager.updateRemoteStates(data.state);
             this.worldState = state;
+            this.characterManager.updateRemoteStates(state);
         });
 
         this.socket.on(GameEvents.PLAYER_DAMAGE, (data: any) => {
@@ -91,7 +92,8 @@ export class GameClient {
             this.worldState = state;
             document.getElementById("pixi-container")!.appendChild(this.app.canvas);
 
-            console.log("state", state);
+            this.localPlayerId = this.socket.id || null;
+            this.characterManager.localPlayerId = this.localPlayerId;
 
             state.forEach((player: PlayerState) => {
                 this.characterManager.createCharacter(player);
@@ -113,10 +115,12 @@ export class GameClient {
     }
 
     public sendGameData(event: any, data: any): void {
-        this.socket.emit(event, {
-            roomId: this.roomId,
-            gameData: data,
-        });
+        if (this.socket) {
+            this.socket.emit(event, {
+                roomId: this.roomId,
+                gameData: data,
+            });
+        }
     }
 
     public sendDamage(targetId: string, amount: number): void {
@@ -132,14 +136,16 @@ export class GameClient {
             updatePlayerPanel(this.worldState, this.roomSize);
             return;
         } else if (this.gameState == "playing") {
-            const localPlayer: { facing: Direction; position: Position } | null =
-                this.characterManager.update(time);
+            this.characterManager.update(time);
 
-            if (localPlayer == null) {
+            if (this.localPlayerId == null) {
                 return;
             }
 
-            this.sendGameData(GameEvents.PLAYER_STATE, localPlayer);
+            const localPlayer = this.characterManager.players.get(this.localPlayerId);
+            if (localPlayer) {
+                this.sendGameData(GameEvents.PLAYER_STATE, localPlayer.toPlayerState());
+            }
         }
     }
 

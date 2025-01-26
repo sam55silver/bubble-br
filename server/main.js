@@ -75,6 +75,7 @@ io.on("connection", (socket) => {
             position: generateRandomPosition(),
             facing: "south",
             health: 100,
+            bolts: [],
         };
 
         socket.join(roomId);

@@ -1,13 +1,9 @@
-import { Container, Sprite, Texture } from "pixi.js";
-import { Direction, PlayerState, Position } from "../types";
-import { getRotationFromDirection } from "../common";
-// import { healthUpdater } from "../ui"
+import { Application, Sprite, Texture } from "pixi.js";
+import { BoltState, Direction, PlayerState, Position } from "../types";
+import { getRotationFromDirection, RemoteContainer } from "../common";
+import { Bolt } from "./bolt";
 
-export class Character extends Container {
-    health: number = 100;
-    lastHitTime: number = 0;
-    readonly HIT_COOLDOWN = 500;
-    isLocal: boolean = false;
+export class Character extends RemoteContainer {
     speed: number = 5;
     direction = {
         up: false,
@@ -15,6 +11,8 @@ export class Character extends Container {
         left: false,
         right: false,
     };
+    lastHitTime: number = 0;
+    readonly HIT_COOLDOWN = 500;
     facing: Direction = Direction.SOUTH;
     lastUpdate?: number = undefined;
     targetX = 0;
@@ -23,15 +21,14 @@ export class Character extends Container {
     id: string;
     username: string;
     health: number;
+    bolts: Map<string, Bolt> = new Map();
+    app: Application;
+    assets: Record<string, Texture>;
 
-    private interpolationDelay = 100; // ms
-    private lastServerUpdate: number = Date.now();
-    private previousPosition = { x: 0, y: 0 };
-    private targetPosition = { x: 0, y: 0 };
-    private isInterpolating = false;
-
-    constructor(state: PlayerState, assets: Record<string, Texture>, isLocal = false) {
+    constructor(app: Application, state: PlayerState, assets: Record<string, Texture>) {
         super();
+        this.app = app;
+        this.assets = assets;
         this.id = state.id;
         this.username = state.username;
         this.facing = state.facing;
@@ -50,8 +47,6 @@ export class Character extends Container {
         player.anchor.set(0.5);
         this.addChild(player);
 
-        this.isLocal = isLocal;
-
         // Set initial position
         this.x = state.position.x;
         this.y = state.position.y;
@@ -60,56 +55,29 @@ export class Character extends Container {
         this.setupKeyboardListeners();
     }
 
-    updatePosition(newPos: Position) {
-        const now = Date.now();
-
-        // Store current position as previous
-        this.previousPosition = {
-            x: this.x,
-            y: this.y,
-        };
-
-        // Update target position
-        this.targetPosition = newPos;
-
-        // Reset interpolation timer
-        this.lastServerUpdate = now;
-        this.isInterpolating = true;
+    spawnBolt(id: string, pos: Position, facing: Direction) {
+        const bolt = new Bolt(id, this.assets, pos, facing);
+        this.app.stage.addChild(bolt);
+        this.bolts.set(id, bolt);
     }
 
-    // Call this in your game loop
-    interpolate(currentTime: number) {
-        if (!this.isInterpolating) return;
-
-        const timeSinceUpdate = currentTime - this.lastServerUpdate;
-        const interpolationProgress = Math.min(timeSinceUpdate / this.interpolationDelay, 1);
-
-        if (interpolationProgress >= 1) {
-            // Interpolation complete
-            this.x = this.targetPosition.x;
-            this.y = this.targetPosition.y;
-            this.isInterpolating = false;
-        } else {
-            // Interpolate position
-            this.x =
-                this.previousPosition.x +
-                (this.targetPosition.x - this.previousPosition.x) * interpolationProgress;
-            this.y =
-                this.previousPosition.y +
-                (this.targetPosition.y - this.previousPosition.y) * interpolationProgress;
-        }
-    }
-
-    update(time: any) {
-        if (this.isLocal) {
+    update(time: any, isLocal: boolean = false) {
+        if (isLocal) {
             this.updateLocal(time);
-            this.updateRotation();
-            return { position: { x: this.x, y: this.y }, facing: this.facing };
+            if (this.shooting) {
+                const id = Date.now().toString(36);
+                this.spawnBolt(id, { x: this.x, y: this.y }, this.facing);
+                this.shooting = false;
+            }
         } else {
             this.interpolate(Date.now());
-            this.updateRotation();
-            return null;
         }
+
+        this.bolts.forEach((bolt: Bolt) => {
+            bolt.update(time, isLocal);
+        });
+
+        this.updateRotation();
     }
 
     setFacing() {
@@ -219,19 +187,36 @@ export class Character extends Container {
         if (now - this.lastHitTime >= this.HIT_COOLDOWN) {
             this.health = Math.max(0, this.health - amount);
             this.lastHitTime = now;
-            
+
             if (this.isLocal) {
                 // healthUpdater(this.health);
                 // checkDeath(this.health);
             }
         }
     }
+
     takeForcedDamage(amount: number): void {
         this.health = Math.max(0, this.health - amount);
         if (this.isLocal) {
             // healthUpdater(this.health);
             // checkDeath(this.health);
         }
+    }
+
+    toPlayerState(): PlayerState {
+        let bolts: BoltState[] = [];
+        this.bolts.forEach((bolt: Bolt) => {
+            bolts.push(bolt.toBoltState());
+        });
+
+        return {
+            id: this.id,
+            username: this.username,
+            position: { x: this.x, y: this.y },
+            facing: this.facing,
+            health: this.health,
+            bolts,
+        };
     }
 }
 

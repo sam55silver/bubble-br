@@ -15,7 +15,7 @@ async function main() {
         const characterManger = new CharacterManager(app, assets);
         client = new GameClient(app, characterManger);
         app.ticker.add((time: any) => {
-            (client as GameClient).update(time);
+            client.update(time);
         });
     } catch (err) {
         showErrorMsg();

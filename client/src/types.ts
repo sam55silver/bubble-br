@@ -37,12 +37,19 @@ export interface Position {
     y: number;
 }
 
+export interface BoltState {
+    id: string;
+    position: Position;
+    facing: Direction;
+}
+
 export interface PlayerState {
     id: string;
     username: string;
     position: Position;
     facing: Direction;
     health: number;
+    bolts: BoltState[];
 }
 
 export enum Direction {
