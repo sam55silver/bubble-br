@@ -1,6 +1,7 @@
 import { io, Socket } from "socket.io-client";
 import { CharacterManager } from "./players/manager.js";
-import { Direction, Position } from "./types.js";
+import { Direction, PlayerState, Position } from "./types.js";
+import { showDNE, showPlayerPanel, showTooFull } from "./ui.js";
 
 export const GameEvents = {
     PLAYER_INITIALIZED: "player_initialized",
@@ -10,19 +11,21 @@ export const GameEvents = {
     WORLD_STATE: "world_state",
     PLAYER_STATE: "player_state",
     PLAYER_DAMAGE: "player_damage",
+    JOIN_ROOM: "join_room",
+    ROOM_DNE: "room_dne",
+    ROOM_FULL: "room_full",
 };
 
 export class GameClient {
     private socket: Socket;
     private characterManager: CharacterManager;
-    private roomId: string | null;
+    private roomId: string | null = null;
+    private worldState: PlayerState[] = [];
 
     constructor(characterManager: CharacterManager) {
-        const url = import.meta.env.PROD ? window.location.href : "http://localhost:5550";
-        console.log(url);
-        this.socket = io(url);
         this.characterManager = characterManager;
-        this.roomId = null;
+        const url = import.meta.env.PROD ? window.location.href : "http://localhost:5550";
+        this.socket = io(url);
         this.setupSocketListeners();
     }
 
@@ -61,17 +64,33 @@ export class GameClient {
 
         this.socket.on(GameEvents.PLAYER_DAMAGE, (data: any) => {
             if (!this.characterManager) return;
-            
+
             const player = this.characterManager.getPlayer(data.targetId);
             if (player) {
                 player.takeForcedDamage(data.amount);
             }
         });
+
+        this.socket.on(
+            GameEvents.JOIN_ROOM,
+            ({ state, roomSize }: { state: PlayerState[]; roomSize: number }) => {
+                this.worldState = state;
+                showPlayerPanel(this.worldState, roomSize);
+            },
+        );
+
+        this.socket.on(GameEvents.ROOM_DNE, () => {
+            showDNE();
+        });
+
+        this.socket.on(GameEvents.ROOM_FULL, () => {
+            showTooFull();
+        });
     }
 
-    public joinRoom(roomId: string): void {
+    public joinRoom(roomId: string, username: string): void {
         this.roomId = roomId;
-        this.socket.emit(GameEvents.PLAYER_INITIALIZED, roomId);
+        this.socket.emit(GameEvents.JOIN_ROOM, { roomId, username });
     }
 
     public sendGameData(event: any, data: any): void {
@@ -85,10 +104,10 @@ export class GameClient {
         this.socket.emit(GameEvents.PLAYER_DAMAGE, {
             roomId: this.roomId,
             targetId: targetId,
-            amount: amount
+            amount: amount,
         });
     }
-    
+
     public update(time: any): void {
         const localPlayer: { facing: Direction; position: Position } | null =
             this.characterManager.update(time);

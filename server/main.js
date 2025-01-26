@@ -11,6 +11,8 @@ const MAP_SIZE = {
 const TICK_RATE = 60;
 const TICK_INTERVAL = 1000 / TICK_RATE;
 
+const PLAYER_LIMIT = 12;
+
 const corsSettings = {
     cors: {
         origin: "*",
@@ -24,14 +26,17 @@ const GameEvents = {
     PLAYER_DISCONNECTED: "player_disconnected",
     EXISTING_PLAYERS: "existing_players",
     WORLD_STATE: "world_state",
-    PLAYER_STATE: "player_state", // Changed from PLAYER_MOVE
+    PLAYER_STATE: "player_state",
+    JOIN_ROOM: "join_room",
+    ROOM_DNE: "room_dne",
+    ROOM_FULL: "room_full",
 };
 
 const io = new Server(http, corsSettings);
 
 // Map of rooms, where each room contains a Map of player states
 // rooms: Map<roomId, Map<playerId, playerState>>
-const rooms = new Map();
+const rooms = new Map().set("bubble", new Map());
 
 function generateRandomPosition() {
     return {
@@ -42,6 +47,38 @@ function generateRandomPosition() {
 
 io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
+
+    socket.on(GameEvents.JOIN_ROOM, ({ roomId, username }) => {
+        console.log(`Socket ${socket.id} joining room ${roomId}`);
+        // Create room if it doesn't exist
+        if (!rooms.has(roomId)) {
+            socket.emit(GameEvents.ROOM_DNE, {});
+            return;
+        }
+
+        const world = rooms.get(roomId);
+
+        if (world.size >= PLAYER_LIMIT) {
+            socket.emit(GameEvents.ROOM_FULL, { players: world.size });
+            return;
+        }
+
+        const initialState = {
+            id: socket.id,
+            username,
+            position: generateRandomPosition(),
+            facing: "south",
+            health: 100,
+        };
+
+        // Add player to room
+        world.set(socket.id, initialState);
+        socket.join(roomId);
+
+        worldState = Array.from(world.values());
+
+        socket.emit(GameEvents.JOIN_ROOM, { state: worldState, roomSize: PLAYER_LIMIT });
+    });
 
     socket.on(GameEvents.PLAYER_INITIALIZED, (roomId) => {
         console.log(`Socket ${socket.id} joining room ${roomId}`);
@@ -103,11 +140,6 @@ io.on("connection", (socket) => {
             if (players.has(socket.id)) {
                 players.delete(socket.id);
                 io.to(roomId).emit(GameEvents.PLAYER_DISCONNECTED, { id: socket.id });
-
-                // Remove room if empty
-                if (players.size === 0) {
-                    rooms.delete(roomId);
-                }
             }
         });
     });

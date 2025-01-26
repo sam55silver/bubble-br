@@ -21,15 +21,13 @@ body {
 
 #main-menu-container {
     /* display:none to hide, :flex to show */
-    display: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     width: 100%;
     height: 100vh;
     
-    #connection-panel {
-        display: flex;
+    .panel {
         flex-direction: column;
         gap: 10px;
         outline: 4px solid #660000;
@@ -37,13 +35,13 @@ body {
         border-radius: 10px;
         padding: 40px;
         
-        #server-input-label {
+        label {
             font-size: 3rem;
             text-align: center;
             text-shadow: 2px 2px 4px #1a1a1a;
         }
     
-        #server-input, #username-input {
+        input {
             background-color: #ffffff;
             color: #1a1a1a;
             border-radius: 5px;
@@ -57,7 +55,7 @@ body {
             }
         }
         
-        #connect-button {
+        button {
             background-color: #ffffff;
             color: #1a1a1a;
             border-radius: 5px;
@@ -74,15 +72,15 @@ body {
         }
     
 
-        #controls {
+        .msg {
             padding-top: 10px;
             text-align: center;
             text-shadow: 2px 2px 4px #1a1a1a;
+            width: 100%;
         }
     }
 
-    #connecting {
-        display: none;
+    .message {
         outline: 4px solid #660000;
         background-color: #ba3030;
         border-radius: 10px;
@@ -90,6 +88,14 @@ body {
         font-size: 2rem;
         text-shadow: 2px 2px 4px #1a1a1a;
     }
+}
+
+.hidden {
+    display: none;
+}
+
+.visible {
+    display: flex;
 }
 
 
@@ -100,7 +106,7 @@ body {
     height: 100vh;
     overflow: hidden;
     /* display:none to hide, :flex to show */
-    display: flex;
+    display: none;
     justify-content: center;
     align-items: center;
 

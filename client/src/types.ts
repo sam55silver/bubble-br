@@ -39,6 +39,7 @@ export interface Position {
 
 export interface PlayerState {
     id: string;
+    username: string;
     position: Position;
     facing: Direction;
     health: number;
