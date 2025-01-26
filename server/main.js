@@ -140,9 +140,6 @@ io.on("connection", (socket) => {
         if (roomPlayers && roomPlayers.has(targetId)) {
             const targetPlayer = roomPlayers.get(targetId);
             const health = targetPlayer.health - amount;
-            if (health <= 0) {
-                io.to(roomId).emit(GameEvents.PLAYER_DEAD, { id: targetPlayer.id });
-            }
             targetPlayer.health = Math.max(0, health);
         }
     });
@@ -153,6 +150,14 @@ function serverTick() {
         if (players.size > 0) {
             // Convert players Map to array for world state
             const worldState = Array.from(players.values());
+
+            worldState.forEach((state) => {
+                if (state.health <= 0) {
+                    io.to(roomId).emit(GameEvents.PLAYER_DEAD, { id: state.id });
+                    io.in(state.id).socketsLeave(roomId);
+                }
+            });
+
             io.to(roomId).emit(GameEvents.WORLD_STATE, { state: worldState });
         }
     });

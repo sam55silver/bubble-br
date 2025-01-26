@@ -36,6 +36,9 @@ export class Character extends RemoteContainer {
     app: GameApp;
     assets: Record<string, Texture>;
     playerContainer: Container;
+    wholePlayer: Container;
+
+    alive: boolean = true;
 
     constructor(
         app: GameApp,
@@ -54,8 +57,11 @@ export class Character extends RemoteContainer {
 
         this.zIndex = 2;
 
+        this.wholePlayer = new Container();
+        this.addChild(this.wholePlayer);
+
         this.playerContainer = new Container();
-        this.addChild(this.playerContainer);
+        this.wholePlayer.addChild(this.playerContainer);
 
         const crossBowTexture: Texture = assets.crossBowRed;
         const weapon = new Sprite(crossBowTexture);
@@ -70,7 +76,7 @@ export class Character extends RemoteContainer {
 
         const textContainer = new Container();
         textContainer.y = -60;
-        this.addChild(textContainer);
+        this.wholePlayer.addChild(textContainer);
 
         const usernameText = new Text({
             text: state.username,
@@ -149,6 +155,10 @@ export class Character extends RemoteContainer {
     }
 
     update(time: any, isLocal: boolean = false) {
+        if (!this.alive) {
+            return;
+        }
+
         if (isLocal) {
             this.updateLocal(time);
             if (this.shooting) {

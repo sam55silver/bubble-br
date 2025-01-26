@@ -36,7 +36,8 @@ export class CharacterManager {
         if (character) {
             this.collisionSystem.removeCharacter(character);
             this.players.delete(playerId);
-            character.destroy();
+            character.alive = false;
+            character.wholePlayer.destroy();
         }
     }
 

@@ -1,8 +1,8 @@
 import { io, Socket } from "socket.io-client";
 import { CharacterManager } from "./players/manager.js";
 import { GameEvents, PlayerState } from "./types.js";
-import { showApp, showDNE, showPlayerPanel, showTooFull, updatePlayerPanel } from "./ui.js";
 import { AudioSystem } from "./audio/audio.js";
+import { showApp, showDeath, showDNE, showPlayerPanel, showTooFull, updatePlayerPanel } from "./ui";
 import { BOLT_DAMAGE, GameApp } from "./common.js";
 import { Character } from "./players/character.js";
 
@@ -98,6 +98,9 @@ export class GameClient {
 
         this.socket.on(GameEvents.PLAYER_DEAD, ({ id }: { id: string }) => {
             this.characterManager.removeCharacter(id);
+            if (this.localPlayerId == id) {
+                showDeath();
+            }
         });
     }
 
