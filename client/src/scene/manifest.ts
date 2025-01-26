@@ -39,6 +39,7 @@ export const manifest = {
                 waterTile: "/assets/Tiles/Water_Tile.png",
 
                 tiledMap: "/assets/Tiles/tiled_map.png",
+                tiledMapLarge: "/assets/Tiles/tiled_map_large.webp",
 
                 // Weapons
                 pistol: "/assets/characters/Weapons/Pistol_Wood_Black_A_1x1.png",
@@ -52,10 +53,12 @@ export const manifest = {
                 crossBowAshen: "/assets/characters/Weapons/Crossbow_Wood_Ashen_A_1x1.png",
 
                 // Crossbow Bolts
-                crossBowBoltLight: "/assets/characters/Weapons/Crossbow_Bolt_Wood_Light_Red_B_1x1.png",
+                crossBowBoltLight:
+                    "/assets/characters/Weapons/Crossbow_Bolt_Wood_Light_Red_B_1x1.png",
                 crossBowBoltDark: "/assets/characters/Weapons/Crossbow_Bolt_Wood_Dark_B_1x1.png",
                 crossBowBoltBlack: "/assets/characters/Weapons/Crossbow_Bolt_Wood_Black_B_1x1.png",
-                crossBowBoltAshenRusty: "/assets/characters/Weapons/Crossbow_Bolt_Wood_Ashen_B_Rusty_1x1.png",
+                crossBowBoltAshenRusty:
+                    "/assets/characters/Weapons/Crossbow_Bolt_Wood_Ashen_B_Rusty_1x1.png",
                 crossBowBoltAshen: "/assets/characters/Weapons/Crossbow_Bolt_Wood_Ashen_B_1x1.png",
             },
         },

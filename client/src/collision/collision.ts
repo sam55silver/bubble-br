@@ -1,33 +1,44 @@
-import { Container, Rectangle, Sprite } from "pixi.js";
+import { Container, Rectangle } from "pixi.js";
 import { Character } from "../players/character";
 import { Bolt } from "../players/bolt";
 
 export class CollisionSystem {
-    private characters: Set<Character>;
-    private projectiles: Set<Container>;
+    private characters: Map<string, Character>;
+    private projectiles: Set<Bolt>;
+
+    public localPlayerId: string | null = null;
 
     constructor() {
-        this.characters = new Set();
+        this.characters = new Map();
         this.projectiles = new Set();
     }
 
+    isLocal(character: Character): boolean {
+        return this.localPlayerId == character.id;
+    }
+
     addCharacter(character: Character) {
-        this.characters.add(character);
+        this.characters.set(character.id, character);
     }
 
     removeCharacter(character: Character) {
-        this.characters.delete(character);
+        this.characters.delete(character.id);
     }
 
-    addProjectile(projectile: Container) {
+    addProjectile(projectile: Bolt) {
         this.projectiles.add(projectile);
     }
 
-    removeProjectile(projectile: Sprite) {
+    removeProjectile(projectile: Bolt) {
+        const player = this.characters.get(projectile.playerId);
+        if (player) {
+            player.bolts.delete(projectile.id);
+        }
         this.projectiles.delete(projectile);
+        projectile.destroy();
     }
 
-    update(time: any) {
+    update() {
         this.projectiles = new Set(
             Array.from(this.projectiles).filter((projectile) => {
                 if (projectile instanceof Bolt && !projectile.isAlive()) {
@@ -38,7 +49,7 @@ export class CollisionSystem {
         );
 
         // Check character-projectile collisions
-        for (const character of this.characters) {
+        for (const character of this.characters.values()) {
             for (const projectile of this.projectiles) {
                 if (this.checkCharacterProjectileCollision(character, projectile)) {
                     this.handleCharacterProjectileCollision(character, projectile);
@@ -46,7 +57,7 @@ export class CollisionSystem {
             }
         }
 
-        const charactersArray = Array.from(this.characters);
+        const charactersArray = Array.from(this.characters.values());
         for (let i = 0; i < charactersArray.length; i++) {
             for (let j = i + 1; j < charactersArray.length; j++) {
                 const char1 = charactersArray[i];
@@ -108,7 +119,7 @@ export class CollisionSystem {
         return this.checkCollision(bounds1, bounds2);
     }
 
-    private checkCharacterProjectileCollision(character: Character, projectile: Container): boolean {
+    private checkCharacterProjectileCollision(character: Character, projectile: Bolt): boolean {
         const charBounds = this.getCharacterBounds(character);
         const projectileBounds = this.getProjectileBounds(projectile);
         if (!projectileBounds) {
@@ -125,18 +136,18 @@ export class CollisionSystem {
 
         console.log(`Collision detected between Characters`);
 
-        if (char1.isLocal) {
+        if (this.isLocal(char1)) {
             char1.x -= Math.cos(angle) * pushDistance;
             char1.y -= Math.sin(angle) * pushDistance;
         }
-        if (char2.isLocal) {
+        if (this.isLocal(char2)) {
             char2.x += Math.cos(angle) * pushDistance;
             char2.y += Math.sin(angle) * pushDistance;
         }
     }
 
-    private handleCharacterProjectileCollision(character: Character, projectile: Container): void {
-        if (projectile instanceof Bolt && character.id === projectile.shooterId) {
+    private handleCharacterProjectileCollision(character: Character, projectile: Bolt): void {
+        if (projectile instanceof Bolt && character.id === projectile.playerId) {
             return;
         }
         console.log(`Collision detected between Character and Projectile`);
@@ -144,9 +155,7 @@ export class CollisionSystem {
         character.takeDamage(10);
 
         if (projectile instanceof Bolt) {
-            // send damage to server
-            
-            projectile.destroy();
+            this.removeProjectile(projectile);
         }
 
         setTimeout(() => {

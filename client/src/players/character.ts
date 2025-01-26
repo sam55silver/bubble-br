@@ -1,13 +1,10 @@
-import { Container, Sprite, Texture } from "pixi.js";
-import { Direction, Position } from "../types";
-import { getRotationFromDirection } from "../common";
-// import { healthUpdater } from "../ui"
+import { Sprite, Texture, Text, Container, Graphics } from "pixi.js";
+import { BoltState, Direction, PlayerState, Position } from "../types";
+import { GameApp, getRotationFromDirection, RemoteContainer } from "../common";
+import { Bolt } from "./bolt";
+import { CollisionSystem } from "../collision/collision";
 
-export class Character extends Container {
-    health: number = 100;
-    lastHitTime: number = 0;
-    readonly HIT_COOLDOWN = 500;
-    isLocal: boolean = false;
+export class Character extends RemoteContainer {
     speed: number = 5;
     direction = {
         up: false,
@@ -15,101 +12,159 @@ export class Character extends Container {
         left: false,
         right: false,
     };
+    lastHitTime: number = 0;
+    readonly HIT_COOLDOWN = 500;
     facing: Direction = Direction.SOUTH;
     lastUpdate?: number = undefined;
     targetX = 0;
     targetY = 0;
     shooting = false;
     id: string;
+    username: string;
 
-    private interpolationDelay = 100; // ms
-    private lastServerUpdate: number = Date.now();
-    private previousPosition = { x: 0, y: 0 };
-    private targetPosition = { x: 0, y: 0 };
-    private isInterpolating = false;
+    collisionSystem: CollisionSystem;
+
+    health: number;
+    maxHealth = 100;
+    healthBar: Graphics;
+    healthWidth: number;
+    healthHeight: number;
+    healthBarColour = 0x22c55e;
+
+    bolts: Map<string, Bolt> = new Map();
+    app: GameApp;
+    assets: Record<string, Texture>;
+    playerContainer: Container;
 
     constructor(
-        id: string,
+        app: GameApp,
+        state: PlayerState,
         assets: Record<string, Texture>,
-        x: number,
-        y: number,
-        isLocal = false,
+        collisionSystem: CollisionSystem,
     ) {
         super();
-        this.id = id;
+        this.app = app;
+        this.assets = assets;
+        this.collisionSystem = collisionSystem;
+        this.id = state.id;
+        this.username = state.username;
+        this.facing = state.facing;
+        this.health = state.health;
+
         this.zIndex = 2;
+
+        this.playerContainer = new Container();
+        this.addChild(this.playerContainer);
 
         const crossBowTexture: Texture = assets.crossBowRed;
         const weapon = new Sprite(crossBowTexture);
         weapon.anchor.set(0.5);
         weapon.rotation = Math.PI / 2;
         weapon.y = 40;
-        this.addChild(weapon);
+        this.playerContainer.addChild(weapon);
 
         const player = new Sprite(assets.player);
         player.anchor.set(0.5);
-        this.addChild(player);
+        this.playerContainer.addChild(player);
 
-        this.isLocal = isLocal;
+        const textContainer = new Container();
+        textContainer.y = -60;
+        this.addChild(textContainer);
+
+        const usernameText = new Text({
+            text: state.username,
+            style: {
+                fontFamily: "Xolonium",
+                fontSize: 20,
+                fill: "white",
+                align: "center",
+            },
+        });
+        usernameText.anchor.set(0.5, 0.5);
+
+        const paddingX = 10;
+        const paddingY = 5;
+        const minWidth = 100;
+
+        this.healthWidth = Math.max(usernameText.width + paddingX * 2, minWidth);
+        this.healthHeight = usernameText.height + paddingY * 2;
+
+        // Create a container for the health bar
+        const healthBarContainer = new Container();
+        healthBarContainer.alpha = 0.5;
+        textContainer.addChild(healthBarContainer);
+        textContainer.addChild(usernameText);
+
+        // Create background (grey/dark bar)
+        //
+        const healthBackground = new Graphics()
+            .rect(
+                -this.healthWidth / 2,
+                -this.healthHeight / 2,
+                this.healthWidth,
+                this.healthHeight,
+            )
+            .fill(0x333333);
+
+        // Create health bar (green bar)
+        this.healthBar = new Graphics()
+            .rect(
+                -this.healthWidth / 2,
+                -this.healthHeight / 2,
+                this.healthWidth,
+                this.healthHeight,
+            )
+            .fill(this.healthBarColour);
+
+        healthBarContainer.addChild(healthBackground);
+        healthBarContainer.addChild(this.healthBar);
 
         // Set initial position
-        this.x = x;
-        this.y = y;
+        this.x = state.position.x;
+        this.y = state.position.y;
 
         // Setup keyboard listeners
         this.setupKeyboardListeners();
     }
 
-    updatePosition(newPos: Position) {
-        const now = Date.now();
+    updateHealthBar() {
+        const healthPercentage = Math.max(0, Math.min(this.health / this.maxHealth, 1));
+        const barWidth = this.healthWidth * healthPercentage;
 
-        // Store current position as previous
-        this.previousPosition = {
-            x: this.x,
-            y: this.y,
-        };
-
-        // Update target position
-        this.targetPosition = newPos;
-
-        // Reset interpolation timer
-        this.lastServerUpdate = now;
-        this.isInterpolating = true;
+        this.healthBar.clear();
+        this.healthBar
+            .rect(-this.healthWidth / 2, -this.healthHeight / 2, barWidth, this.healthHeight)
+            .fill(this.healthBarColour);
     }
 
-    // Call this in your game loop
-    interpolate(currentTime: number) {
-        if (!this.isInterpolating) return;
-
-        const timeSinceUpdate = currentTime - this.lastServerUpdate;
-        const interpolationProgress = Math.min(timeSinceUpdate / this.interpolationDelay, 1);
-
-        if (interpolationProgress >= 1) {
-            // Interpolation complete
-            this.x = this.targetPosition.x;
-            this.y = this.targetPosition.y;
-            this.isInterpolating = false;
-        } else {
-            // Interpolate position
-            this.x =
-                this.previousPosition.x +
-                (this.targetPosition.x - this.previousPosition.x) * interpolationProgress;
-            this.y =
-                this.previousPosition.y +
-                (this.targetPosition.y - this.previousPosition.y) * interpolationProgress;
-        }
+    spawnBolt(id: string, pos: Position, facing: Direction) {
+        const bolt = new Bolt(this.id, id, this.assets, pos, facing);
+        this.app.gameLayer.addChild(bolt);
+        this.bolts.set(id, bolt);
+        this.collisionSystem.addProjectile(bolt);
     }
 
-    update(time: any) {
-        if (this.isLocal) {
+    update(time: any, isLocal: boolean = false) {
+        if (isLocal) {
             this.updateLocal(time);
-            this.updateRotation();
-            return { position: { x: this.x, y: this.y }, facing: this.facing };
+            if (this.shooting) {
+                const id = Date.now().toString(36);
+                this.spawnBolt(id, { x: this.x, y: this.y }, this.facing);
+                this.shooting = false;
+            }
+            if (this.app.bubble?.isPointOutside(this.x, this.y)) {
+                this.health -= 0.05;
+            }
         } else {
             this.interpolate(Date.now());
-            this.updateRotation();
-            return null;
         }
+
+        this.bolts.forEach((bolt: Bolt) => {
+            bolt.update(time, isLocal);
+        });
+
+        this.updateRotation();
+        this.updateHealthBar();
     }
 
     setFacing() {
@@ -140,7 +195,7 @@ export class Character extends Container {
     }
 
     private updateRotation() {
-        this.rotation = getRotationFromDirection(this.facing);
+        this.playerContainer.rotation = getRotationFromDirection(this.facing);
     }
 
     setupKeyboardListeners() {
@@ -219,19 +274,28 @@ export class Character extends Container {
         if (now - this.lastHitTime >= this.HIT_COOLDOWN) {
             this.health = Math.max(0, this.health - amount);
             this.lastHitTime = now;
-            
-            if (this.isLocal) {
-                // healthUpdater(this.health);
-                // checkDeath(this.health);
-            }
         }
     }
+
     takeForcedDamage(amount: number): void {
         this.health = Math.max(0, this.health - amount);
-        if (this.isLocal) {
-            // healthUpdater(this.health);
-            // checkDeath(this.health);
-        }
+    }
+
+    toPlayerState(): PlayerState {
+        let bolts: BoltState[] = [];
+        console.log(this.bolts);
+        this.bolts.forEach((bolt: Bolt) => {
+            bolts.push(bolt.toBoltState());
+        });
+
+        return {
+            id: this.id,
+            username: this.username,
+            position: { x: this.x, y: this.y },
+            facing: this.facing,
+            health: this.health,
+            bolts,
+        };
     }
 }
 

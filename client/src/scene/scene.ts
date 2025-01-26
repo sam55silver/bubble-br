@@ -1,36 +1,27 @@
-import { Application, Assets, Container, Texture } from "pixi.js";
+import { Assets, Container, Texture } from "pixi.js";
 import { manifest } from "./manifest";
 import { Tile } from "./tile";
+import { GameApp } from "../common";
 
-export async function createScene(): Promise<[Application, Record<string, Texture>]> {
-    // 1) Create and initialize Pixi Application
-    const app = await createPixiApplication({
-        backgroundColor: "#1099bb",
-        resizeTo: window,
-    });
-
-    const rotate90 = Math.PI / 2;
-    // const rotate45 = Math.PI / 4;
-    // const rotateMinus90 = -Math.PI / 2;
-    // const rotateMinus45 = -Math.PI / 4;
-    //
-    // 2) load and retrieve needed assets
+export async function createScene(): Promise<[GameApp, Record<string, Texture>]> {
     const assets = await loadSceneAssets(manifest);
 
+    const app = new GameApp();
+    await app.initApp({
+        backgroundColor: "#1a1a1a",
+        resizeTo: window,
+    });
     const scene = new Container();
+    app.gameLayer.addChild(scene);
+
     const layers = createSceneLayers();
 
-    const scale = Math.max(
-        window.innerWidth / assets.tiledMap.width,
-        window.innerHeight / assets.tiledMap.height,
-    );
-
     const map = createSingleTile(
-        assets.tiledMap,
-        window.innerWidth / 2, // Center X
-        window.innerHeight / 2, // Center Y
-        scale,
+        assets.tiledMapLarge,
+        0, // Center X
+        0, // Center Y
     );
+    map.anchor.set(0, 0);
 
     layers.background.addChild(map);
 
@@ -49,26 +40,9 @@ export async function createScene(): Promise<[Application, Record<string, Textur
     //     bottom: map.y + (map.height * scale) / 2,
     // };
 
-
     Object.values(layers).forEach((layer) => scene.addChild(layer));
-    app.stage.addChild(scene);
 
     return [app, assets];
-}
-
-/**
- * Creates a new Pixi Application and initializes it.
- */
-async function createPixiApplication(options: {
-    backgroundColor: string;
-    resizeTo: Window | HTMLElement;
-}): Promise<Application> {
-    const app = new Application();
-    await app.init({
-        background: options.backgroundColor,
-        resizeTo: options.resizeTo,
-    });
-    return app;
 }
 
 /**

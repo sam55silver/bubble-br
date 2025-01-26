@@ -6,21 +6,37 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/style.css">
-    <script defer src="src/ui.js"></script>
-    <title>PixiJS - Template</title>
+    <title>Bubble Battle Royal</title>
 </head>
 
 <body>
-    <div id="main-menu-container">
-        <div id="connection-panel">
-            <label for="server-input" id="server-input-label">*game title here*</label><br>
-            <input type="text" id="server-input" name="server" size="20" placeholder="Enter the server code..." maxlength="20"><br>
+    <div id="main-menu-container" class="visible">
+        <div id="connection-panel" class="panel hidden">
+            <label for="server-input" id="server-input-label">Bubble Battle Royal</label><br>
             <input type="text" id="username-input" name="username" size="20" placeholder="Enter a username..." maxlength="20"><br>
-            <input type="submit" id="connect-button" value="Connect"><br>
-            <div id="controls">Controls: WASD for movement, spacebar to shoot</div>
+            <input type="text" id="server-input" name="server" size="20" placeholder="Enter the server code..." maxlength="20"><br>
+            <button id="connect-button" type="button">Connect</button>
+            <div class="msg">Controls: WASD for movement, spacebar to shoot</div>
         </div>
-        <div id="connecting">
+        <div id="player-panel" class="panel hidden">
+            <label for="server-input" id="server-input-label">Bubble Battle Royal</label><br>
+            <div id="players"></div>
+                <div class="msg">Player Count: <span id="player-size"></span></div>
+                <div class="msg">Waiting for game to start...</div>
+            <div class="msg">Controls: WASD for movement, spacebar to shoot</div>
+            <button id="start-button" type="button" class="hidden">Start</button>
+        </div>
+        <div id="connecting" class="message visible">
             Connecting, please stand by...
+        </div>
+        <div id="error" class="message hidden">
+            An error has occured! Please contact creators...
+        </div>
+        <div id="too-full" class="message hidden">
+            Room is too full! Please try another...
+        </div>
+        <div id="dne" class="message hidden">
+            Room does not exist! Please try another...
         </div>
     </div>
 

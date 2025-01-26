@@ -37,11 +37,19 @@ export interface Position {
     y: number;
 }
 
-export interface PlayerState {
+export interface BoltState {
     id: string;
     position: Position;
     facing: Direction;
+}
+
+export interface PlayerState {
+    id: string;
+    username: string;
+    position: Position;
+    facing: Direction;
     health: number;
+    bolts: BoltState[];
 }
 
 export enum Direction {
@@ -54,3 +62,15 @@ export enum Direction {
     WEST = "west",
     NORTHWEST = "northwest",
 }
+
+export const GameEvents = {
+    PLAYER_DISCONNECTED: "player_disconnected",
+    WORLD_STATE: "world_state",
+    PLAYER_STATE: "player_state",
+    JOIN_ROOM: "join_room",
+    ROOM_DNE: "room_dne",
+    ROOM_FULL: "room_full",
+    JOIN_SPECTATOR: "join_spectator",
+    START_GAME: "start_game",
+    PLAYER_DAMAGE: "player_damage",
+};

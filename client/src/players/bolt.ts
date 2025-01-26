@@ -1,17 +1,25 @@
-import { Container, Sprite, Texture } from "pixi.js";
-import { Direction, Position } from "../types";
-import { getRotationFromDirection } from "../common";
+import { Sprite, Texture } from "pixi.js";
+import { BoltState, Direction, Position } from "../types";
+import { getRotationFromDirection, RemoteContainer } from "../common";
 
-export class Bolt extends Container {
+export class Bolt extends RemoteContainer {
     speed: number = 20;
     facing: Direction;
+    id: string;
+    playerId: string;
     private alive: boolean = true;
-    shooterId: string;
 
-    constructor(assets: Record<string, Texture>, position: Position, direction: Direction, shooterId: string) {
+    constructor(
+        playerId: string,
+        id: string,
+        assets: Record<string, Texture>,
+        position: Position,
+        direction: Direction,
+    ) {
         super();
-        this.shooterId = shooterId;
-        
+        this.playerId = playerId;
+        this.id = id;
+
         this.zIndex = 1;
 
         // Create bullet sprite
@@ -29,7 +37,23 @@ export class Bolt extends Container {
         this.rotation = getRotationFromDirection(direction);
     }
 
-    update(time: any) {
+    toBoltState(): BoltState {
+        return {
+            id: this.id,
+            position: { x: this.x, y: this.y },
+            facing: this.facing,
+        };
+    }
+
+    update(time: any, isLocal: boolean) {
+        if (isLocal) {
+            this.updateLocal(time);
+        } else {
+            this.interpolate(Date.now());
+        }
+    }
+
+    updateLocal(time: any) {
         if (!this.alive) return null;
 
         // Move based on facing direction

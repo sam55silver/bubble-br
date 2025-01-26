@@ -4,12 +4,16 @@ const http = require("http").createServer(app);
 const { Server } = require("socket.io");
 
 const MAP_SIZE = {
-    width: 800,
-    height: 700,
+    width: 2500,
+    height: 2500,
 };
+
+const SPAWN_PADDING = 80;
 
 const TICK_RATE = 60;
 const TICK_INTERVAL = 1000 / TICK_RATE;
+
+const PLAYER_LIMIT = 12;
 
 const corsSettings = {
     cors: {
@@ -19,12 +23,14 @@ const corsSettings = {
 };
 
 const GameEvents = {
-    PLAYER_INITIALIZED: "player_initialized",
-    NEW_PLAYER: "new_player",
     PLAYER_DISCONNECTED: "player_disconnected",
-    EXISTING_PLAYERS: "existing_players",
     WORLD_STATE: "world_state",
-    PLAYER_STATE: "player_state", // Changed from PLAYER_MOVE
+    PLAYER_STATE: "player_state",
+    JOIN_ROOM: "join_room",
+    ROOM_DNE: "room_dne",
+    ROOM_FULL: "room_full",
+    JOIN_SPECTATOR: "join_spectator",
+    START_GAME: "start_game",
 };
 
 const io = new Server(http, corsSettings);
@@ -35,48 +41,55 @@ const rooms = new Map();
 
 function generateRandomPosition() {
     return {
-        x: Math.floor(Math.random() * MAP_SIZE.width),
-        y: Math.floor(Math.random() * MAP_SIZE.height),
+        x: Math.floor(Math.random() * (MAP_SIZE.width - 2 * SPAWN_PADDING) + SPAWN_PADDING),
+        y: Math.floor(Math.random() * (MAP_SIZE.height - 2 * SPAWN_PADDING) + SPAWN_PADDING),
     };
 }
 
 io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
 
-    socket.on(GameEvents.PLAYER_INITIALIZED, (roomId) => {
+    socket.on(GameEvents.JOIN_ROOM, ({ roomId, username }) => {
         console.log(`Socket ${socket.id} joining room ${roomId}`);
+
+        const isSpectator = username == "spectator";
 
         // Create room if it doesn't exist
         if (!rooms.has(roomId)) {
+            if (!isSpectator && process.env.NODE_ENV == "production") {
+                socket.emit(GameEvents.ROOM_DNE, {});
+                return;
+            }
+
             rooms.set(roomId, new Map());
         }
 
-        const roomPlayers = rooms.get(roomId);
+        const world = rooms.get(roomId);
 
-        // Create initial player state
+        if (world.size >= PLAYER_LIMIT) {
+            socket.emit(GameEvents.ROOM_FULL, { players: world.size });
+            return;
+        }
+
         const initialState = {
             id: socket.id,
+            username,
             position: generateRandomPosition(),
             facing: "south",
             health: 100,
+            bolts: [],
         };
 
-        // Add player to room
-        roomPlayers.set(socket.id, initialState);
         socket.join(roomId);
 
-        // Notify other users in the room about new player
-        socket.to(roomId).emit(GameEvents.NEW_PLAYER, initialState);
+        // Add player to room
+        if (!isSpectator) {
+            world.set(socket.id, initialState);
+        }
+        worldState = Array.from(world.values());
 
-        // Send list of existing players to the new participant
-        const existingPlayers = Array.from(roomPlayers.entries())
-            .filter(([id]) => id !== socket.id)
-            .map(([_, state]) => state);
-
-        socket.emit(GameEvents.PLAYER_INITIALIZED, {
-            ...initialState,
-            players: existingPlayers,
-        });
+        const event = isSpectator ? GameEvents.JOIN_SPECTATOR : GameEvents.JOIN_ROOM;
+        socket.emit(event, { state: worldState, roomSize: PLAYER_LIMIT });
     });
 
     socket.on(GameEvents.PLAYER_STATE, (data) => {
@@ -95,6 +108,13 @@ io.on("connection", (socket) => {
         }
     });
 
+    socket.on(GameEvents.START_GAME, ({ roomId }) => {
+        const world = rooms.get(roomId);
+        if (world) {
+            io.to(roomId).emit(GameEvents.START_GAME, { state: Array.from(world.values()) });
+        }
+    });
+
     socket.on("disconnect", () => {
         console.log("User disconnected:", socket.id);
 
@@ -103,11 +123,6 @@ io.on("connection", (socket) => {
             if (players.has(socket.id)) {
                 players.delete(socket.id);
                 io.to(roomId).emit(GameEvents.PLAYER_DISCONNECTED, { id: socket.id });
-
-                // Remove room if empty
-                if (players.size === 0) {
-                    rooms.delete(roomId);
-                }
             }
         });
     });
@@ -123,11 +138,6 @@ io.on("connection", (socket) => {
         if (roomPlayers && roomPlayers.has(targetId)) {
             const targetPlayer = roomPlayers.get(targetId);
             targetPlayer.health = Math.max(0, targetPlayer.health - amount);
-
-            io.to(roomId).emit(GameEvents.PLAYER_DAMAGE, {
-                targetId,
-                amount,
-            });
         }
     });
 });
