@@ -66,13 +66,16 @@ export class Character extends RemoteContainer {
         });
         usernameText.anchor.set(0.5, 0.5);
 
-        const paddingX = 10; // Padding around the text
-        const paddingY = 6; // Padding around the text
+        const paddingX = 10;
+        const paddingY = 6;
+        const minWidth = 100;
+        const backgroundWidth = Math.max(usernameText.width + paddingX * 2, minWidth);
+
         const background = new Graphics()
             .rect(
-                -usernameText.width / 2 - paddingX,
+                -backgroundWidth / 2,
                 -usernameText.height / 2 - paddingY,
-                usernameText.width + paddingX * 2,
+                backgroundWidth,
                 usernameText.height + paddingY * 2,
             )
             .fill(0x000000);
