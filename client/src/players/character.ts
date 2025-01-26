@@ -1,6 +1,7 @@
 import { Sprite, Texture, Text, Container, Graphics } from "pixi.js";
 import { BoltState, Direction, PlayerState, Position } from "../types";
 import {
+    BOLT_RELOAD,
     BUBBLE_DAMAGE,
     GameApp,
     getRotationFromDirection,
@@ -27,6 +28,7 @@ export class Character extends RemoteContainer {
     targetX = 0;
     targetY = 0;
     shooting = false;
+    reloading = false;
     id: string;
     username: string;
 
@@ -171,6 +173,10 @@ export class Character extends RemoteContainer {
             if (this.shooting) {
                 const id = Date.now().toString(36);
                 this.spawnBolt(id, { x: this.x, y: this.y }, this.facing);
+                this.reloading = true;
+                setTimeout(() => {
+                    this.reloading = false;
+                }, BOLT_RELOAD);
                 this.shooting = false;
             }
             if (this.app.bubble?.isPointOutside(this.x, this.y)) {
@@ -262,7 +268,9 @@ export class Character extends RemoteContainer {
         };
 
         keys.space.press = () => {
-            this.shooting = true;
+            if (!this.reloading) {
+                this.shooting = true;
+            }
         };
     }
 

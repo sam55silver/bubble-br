@@ -5,6 +5,7 @@ import { Bubble } from "./scene/bubble";
 
 export const BOLT_DAMAGE = 10;
 export const BOLT_SPEED = 20;
+export const BOLT_RELOAD = 500; //ms
 
 export const BUBBLE_DAMAGE = 1;
 
