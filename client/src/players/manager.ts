@@ -21,7 +21,7 @@ export class CharacterManager {
     }
 
     createCharacter(player: PlayerState) {
-        const character = new Character(this.app, player, this.assets);
+        const character = new Character(this.app, player, this.assets, this.collisionSystem);
         this.players.set(player.id, character);
         this.app.gameLayer.addChild(character);
         this.collisionSystem.addCharacter(character);
@@ -57,7 +57,7 @@ export class CharacterManager {
             playerState.bolts.forEach((boltState: BoltState) => {
                 const bolt = player.bolts.get(boltState.id);
                 if (!bolt) {
-                    player.spawnBolt(boltState.id, boltState.position, boltState.facing);
+                    player.spawnBolt(player.id, boltState.id, boltState.position, boltState.facing);
                 } else {
                     bolt.updatePosition(boltState.position);
                 }
@@ -85,20 +85,13 @@ export class CharacterManager {
         );
     }
 
-    spawnBolt(id: string, pos: Position, facing: Direction) {
-        const bolt = new Bolt(this.assets, pos, facing, id);
-        this.app.stage.addChild(bolt);
-        this.bolts.push({ id, bolt });
-        this.collisionSystem.addProjectile(bolt);
-    }
-
     getPlayer(id: string): Character | undefined {
         return this.players.get(id);
     }
 
-    handleDamage(sourceId: string, targetId: string, amount: number) {
+    handleDamage(targetId: string, amount: number) {
         const character = this.players.get(targetId);
-        if (character && character.isLocal) {
+        if (character && character.id == this.localPlayerId) {
             character.takeDamage(amount);
         }
     }

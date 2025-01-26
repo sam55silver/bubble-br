@@ -72,4 +72,5 @@ export const GameEvents = {
     ROOM_FULL: "room_full",
     JOIN_SPECTATOR: "join_spectator",
     START_GAME: "start_game",
+    PLAYER_DAMAGE: "player_damage",
 };

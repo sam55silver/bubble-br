@@ -138,11 +138,6 @@ io.on("connection", (socket) => {
         if (roomPlayers && roomPlayers.has(targetId)) {
             const targetPlayer = roomPlayers.get(targetId);
             targetPlayer.health = Math.max(0, targetPlayer.health - amount);
-
-            io.to(roomId).emit(GameEvents.PLAYER_DAMAGE, {
-                targetId,
-                amount,
-            });
         }
     });
 });

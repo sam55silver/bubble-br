@@ -2,6 +2,7 @@ import { Sprite, Texture, Text, Container, Graphics } from "pixi.js";
 import { BoltState, Direction, PlayerState, Position } from "../types";
 import { GameApp, getRotationFromDirection, RemoteContainer } from "../common";
 import { Bolt } from "./bolt";
+import { CollisionSystem } from "../collision/collision";
 
 export class Character extends RemoteContainer {
     speed: number = 5;
@@ -21,6 +22,8 @@ export class Character extends RemoteContainer {
     id: string;
     username: string;
 
+    collisionSystem: CollisionSystem;
+
     health: number;
     maxHealth = 100;
     healthBar: Graphics;
@@ -33,10 +36,16 @@ export class Character extends RemoteContainer {
     assets: Record<string, Texture>;
     playerContainer: Container;
 
-    constructor(app: GameApp, state: PlayerState, assets: Record<string, Texture>) {
+    constructor(
+        app: GameApp,
+        state: PlayerState,
+        assets: Record<string, Texture>,
+        collisionSystem: CollisionSystem,
+    ) {
         super();
         this.app = app;
         this.assets = assets;
+        this.collisionSystem = collisionSystem;
         this.id = state.id;
         this.username = state.username;
         this.facing = state.facing;
@@ -129,9 +138,10 @@ export class Character extends RemoteContainer {
     }
 
     spawnBolt(id: string, pos: Position, facing: Direction) {
-        const bolt = new Bolt(id, this.assets, pos, facing);
+        const bolt = new Bolt(this.id, id, this.assets, pos, facing);
         this.app.gameLayer.addChild(bolt);
         this.bolts.set(id, bolt);
+        this.collisionSystem.addProjectile(bolt);
     }
 
     update(time: any, isLocal: boolean = false) {
@@ -264,24 +274,16 @@ export class Character extends RemoteContainer {
         if (now - this.lastHitTime >= this.HIT_COOLDOWN) {
             this.health = Math.max(0, this.health - amount);
             this.lastHitTime = now;
-
-            if (this.isLocal) {
-                // healthUpdater(this.health);
-                // checkDeath(this.health);
-            }
         }
     }
 
     takeForcedDamage(amount: number): void {
         this.health = Math.max(0, this.health - amount);
-        if (this.isLocal) {
-            // healthUpdater(this.health);
-            // checkDeath(this.health);
-        }
     }
 
     toPlayerState(): PlayerState {
         let bolts: BoltState[] = [];
+        console.log(this.bolts);
         this.bolts.forEach((bolt: Bolt) => {
             bolts.push(bolt.toBoltState());
         });

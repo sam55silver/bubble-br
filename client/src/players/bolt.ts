@@ -6,15 +6,18 @@ export class Bolt extends RemoteContainer {
     speed: number = 20;
     facing: Direction;
     id: string;
+    playerId: string;
     private alive: boolean = true;
 
     constructor(
+        playerId: string,
         id: string,
         assets: Record<string, Texture>,
         position: Position,
         direction: Direction,
     ) {
         super();
+        this.playerId = playerId;
         this.id = id;
 
         this.zIndex = 1;
